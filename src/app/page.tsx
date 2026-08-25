@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { ProductScene } from '@/components/ProductScene'
-import { ConvergeScene } from '@/components/scenes'
+import { EditorialScene } from '@/components/scenes'
 import { Reveal, Parallax, Words, MaskReveal } from '@/components/motion'
 import { Footer } from '@/components/Footer'
 import { products } from '@/lib/products'
@@ -115,21 +115,31 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── CONVERGENCIA — las piezas entran desde los lados y se juntan ── */}
+      {/* ── MANIFIESTO — el pliego editorial con la copy sostenida encima ──
+         Una pieza por producto (antes tres de las seis fotos eran del mismo),
+         para que "una intención" se vea de verdad recorriendo la colección. */}
       <div data-tone="dark">
-      <ConvergeScene
+      <EditorialScene
         bg="#0A0A0A"
-        textColor="#F5F5F0"
-        eyebrow="Tres piezas · Una intención"
+        eyebrow="Seis piezas · Una intención"
+        screensPerPhoto={0.7}
         title={'PIEZA\nÚNICA'}
         sub="EXISTE UNA. CUANDO SE VA, NO VUELVE."
         images={[
-          '/images/shoot-04-1.jpg',
           '/images/shoot-01-1.jpg',
           '/images/shoot-02-1.jpg',
-          '/images/shoot-04-5.jpg',
           '/images/shoot-03-1.jpg',
-          '/images/shoot-04-7.jpg',
+          '/images/shoot-04-1.jpg',
+          '/images/shoot-05-1.jpg',
+          '/images/shoot-06-1.jpg',
+        ]}
+        captions={[
+          '01 · Piedras únicas',
+          '02 · Metal frío',
+          '03 · Acero gris',
+          'POP · Cacao tejido',
+          '05 · Margaritas tejidas',
+          '06 · Oliva tejida',
         ]}
       />
       </div>

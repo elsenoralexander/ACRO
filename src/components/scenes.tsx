@@ -4,121 +4,12 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion'
 
 /* ════════════════════════════════════════════════════════════════
-   ConvergeScene — images fly in from the sides and converge into a
-   fanned cluster as you scroll, while a headline assembles behind.
-   (The alliahealth "phones from the sides" effect, ACRO-style.)
-   ════════════════════════════════════════════════════════════════ */
-
-function ConvergeItem({
-  progress,
-  index,
-  total,
-  src,
-}: {
-  progress: MotionValue<number>
-  index: number
-  total: number
-  src: string
-}) {
-  const side = index % 2 === 0 ? -1 : 1
-  const mid = (total - 1) / 2
-  // Already clearly peeking from the edges at progress 0 — never an empty wait.
-  const startX = `${side * 50}vw`
-  const targetX = `${(index - mid) * 11}vw`
-  const startRot = `${side * -14}deg`
-  const targetRot = `${(index - mid) * 4}deg`
-
-  const x = useTransform(progress, [0, 0.42, 1], [startX, targetX, targetX])
-  const rotate = useTransform(progress, [0, 0.42], [startRot, targetRot])
-  const scale = useTransform(progress, [0, 0.42, 1], [0.78, 1, 1.12])
-  const yOff = index % 2 === 0 ? '-3vh' : '4vh'
-
-  return (
-    <motion.div
-      style={{ x, rotate, scale, y: yOff, zIndex: index }}
-      className="absolute w-[62vw] sm:w-[42vw] md:w-[25vw] aspect-[3/4] overflow-hidden shadow-2xl"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />
-    </motion.div>
-  )
-}
-
-export function ConvergeScene({
-  images,
-  height = '185vh',
-  bg = '#0A0A0A',
-  textColor = '#F5F5F0',
-  eyebrow,
-  title,
-  sub,
-}: {
-  images: string[]
-  height?: string
-  bg?: string
-  textColor?: string
-  eyebrow?: string
-  title?: string
-  sub?: string
-}) {
-  const ref = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
-
-  const titleOpacity = useTransform(scrollYProgress, [0.34, 0.5, 1], [0, 1, 1])
-  const titleScale = useTransform(scrollYProgress, [0.34, 0.54, 1], [1.16, 1, 1.05])
-  const eyebrowOpacity = useTransform(scrollYProgress, [0, 0.06, 0.34, 0.44], [0, 1, 1, 0])
-
-  return (
-    <section ref={ref} style={{ height, background: bg }} className="relative">
-      <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center">
-        {/* Converging images */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
-          {images.slice(0, 6).map((src, i) => (
-            <ConvergeItem key={i} progress={scrollYProgress} index={i} total={Math.min(images.length, 6)} src={src} />
-          ))}
-        </div>
-
-        {/* Eyebrow — top */}
-        {eyebrow && (
-          <motion.div style={{ opacity: eyebrowOpacity }} className="absolute top-[11vh] left-1/2 -translate-x-1/2 text-center px-6 z-30">
-            <span className="font-sans text-[10px] md:text-[11px] tracking-[0.55em] uppercase" style={{ color: textColor, opacity: 0.6 }}>
-              {eyebrow}
-            </span>
-          </motion.div>
-        )}
-
-        {/* Headline OVER the cluster — mix-blend keeps it legible on any photo */}
-        {(title || sub) && (
-          <motion.div
-            style={{ opacity: titleOpacity, scale: titleScale }}
-            className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-6 pointer-events-none"
-          >
-            <div className="mix-blend-difference text-white">
-              {title && (
-                <h2 className="font-bebas leading-[0.8] text-[22vw] md:text-[14vw]">
-                  {title.split('\n').map((l, i) => (
-                    <span key={i} className="block">
-                      {l}
-                    </span>
-                  ))}
-                </h2>
-              )}
-              {sub && <p className="font-bebas text-3xl md:text-5xl leading-[0.95] mt-3 max-w-3xl mx-auto">{sub}</p>}
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </section>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════════
    EditorialScene — the lookbook as an editorial spread. One photo
    at a time, full-bleed; each one wipes in over the previous with a
    scrubbed curtain reveal (clip-path) and settles. A counter ticks,
    a caption changes. No flying, no rotation: magazine, not widget.
-   Replaces ConvergeScene (photos-as-confetti read cheap and competed
-   with the page's single hero moment).
+   Sustituye al ConvergeScene: las fotos volando desde los lados leían a
+   recurso fácil y montaban un segundo momento heroico.
    ════════════════════════════════════════════════════════════════ */
 
 /* Every scroll-linked keyframe list here MUST span the whole [0,1] progress
@@ -195,12 +86,22 @@ export function EditorialScene({
   images,
   captions = [],
   eyebrow,
+  title,
+  sub,
+  screensPerPhoto = 1,
   bg = '#0A0A0A',
 }: {
   images: string[]
   /** One micro-label per photo, shown bottom-left. */
   captions?: string[]
   eyebrow?: string
+  /** Manifesto held over the whole spread (home). `\n` breaks the lines. */
+  title?: string
+  sub?: string
+  /** Pantallas de scroll por foto. 1 = una foto por pantalla, el ritmo de una
+      ficha de producto. La home baja de aquí: ahí el pliego es un paseo por la
+      colección, no una lectura pieza a pieza, y a 1 se comía seis pantallas. */
+  screensPerPhoto?: number
   bg?: string
 }) {
   const ref = useRef<HTMLElement>(null)
@@ -209,7 +110,12 @@ export function EditorialScene({
   const barScale = useTransform(scrollYProgress, [0, 1], [0, 1])
 
   return (
-    <section ref={ref} data-tone="dark" style={{ height: `${total * 100}vh`, background: bg }} className="relative">
+    <section
+      ref={ref}
+      data-tone="dark"
+      style={{ height: `${Math.round(total * screensPerPhoto * 100)}vh`, background: bg }}
+      className="relative"
+    >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {images.map((src, i) => (
           <EditorialFrame key={i} progress={scrollYProgress} index={i} total={total} src={src} />
@@ -217,6 +123,27 @@ export function EditorialScene({
 
         {/* Quiet editorial chrome over the photos */}
         <div className="absolute inset-0 z-20 pointer-events-none">
+          {/* Manifiesto sostenido: la copy no se mueve mientras las piezas pasan
+             por debajo. Sin animarlo — la página ya tiene su clímax, y aquí la
+             fuerza está en que el texto AGUANTE. `difference` lo mantiene legible
+             sobre cualquier foto. */}
+          {(title || sub) && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+              <div className="mix-blend-difference text-white">
+                {title && (
+                  <h2 className="font-bebas leading-[0.8] text-[22vw] md:text-[14vw]">
+                    {title.split('\n').map((l, i) => (
+                      <span key={i} className="block">
+                        {l}
+                      </span>
+                    ))}
+                  </h2>
+                )}
+                {sub && <p className="font-bebas text-3xl md:text-5xl leading-[0.95] mt-3 max-w-3xl mx-auto">{sub}</p>}
+              </div>
+            </div>
+          )}
+
           {eyebrow && (
             <span className="absolute top-[9vh] left-6 md:left-10 font-sans text-[9px] md:text-[10px] tracking-[0.55em] uppercase text-white/70 mix-blend-difference">
               {eyebrow}
