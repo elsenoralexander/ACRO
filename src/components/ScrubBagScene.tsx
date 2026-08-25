@@ -75,8 +75,12 @@ function BeatOverlay({
   const x = useTransform(progress, [a, d], side === 'right' ? ['7vw', '-1vw'] : ['-7vw', '1vw'])
   return (
     <motion.h2
-      style={{ opacity, x, color }}
-      className={`absolute top-1/2 -translate-y-1/2 z-10 font-bebas leading-[0.82] text-[17vw] md:text-[11vw] pointer-events-none select-none ${
+      // The vertical centring lives in `y`, not in a `-translate-y-1/2` class:
+      // framer writes the whole `transform` for `x`, so a Tailwind translate
+      // utility is silently dropped and the beat hangs half a screen too low
+      // (clipping off the bottom on short viewports).
+      style={{ opacity, x, y: '-50%', color }}
+      className={`absolute top-1/2 z-10 font-bebas leading-[0.82] text-[17vw] md:text-[11vw] pointer-events-none select-none ${
         side === 'right' ? 'right-[5vw] text-right' : 'left-[5vw] text-left'
       }`}
     >
