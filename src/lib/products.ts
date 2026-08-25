@@ -9,6 +9,13 @@ export type Product = {
     views: string[]
   }
   cutout?: string // high-def transparent PNG for the motion-graphics scene
+  /** Scroll-scrubbed hero clip (frames in public/scrub/<id>). Presence = showcase PDP. */
+  scrub?: {
+    path: string // e.g. '/scrub/06'
+    frames: number
+    /** Colour for the narrative beats over the clip. */
+    beatColor: string
+  }
   shooting: string[]
   copy: {
     es: {
@@ -314,10 +321,77 @@ export const products: Product[] = [
           "The 05 was born in a field of wildflowers at dusk. From the light slipping between the stems, from Queen Anne's lace, from that slow summer in no hurry. Each daisy is woven by hand — like the ones that grow, one by one, with no mould.",
       },
     },
+    scrub: {
+      path: '/scrub/05',
+      frames: 90,
+      beatColor: '#5A4632',
+    },
     theme: {
       bg: '#EFEADD',
       text: '#2A2417',
       accent: '#8F9779',
+    },
+  },
+  {
+    id: '06',
+    number: '06',
+    price: 135,
+    images: {
+      main: '/images/product-06.jpg',
+      views: ['/images/product-06.jpg', '/images/product-06-detail-1.jpg'],
+    },
+    shooting: [
+      '/images/shoot-06-1.jpg',
+      '/images/shoot-06-2.jpg',
+      '/images/shoot-06-3.jpg',
+      '/images/shoot-06-4.jpg',
+      '/images/shoot-06-5.jpg',
+      '/images/shoot-06-6.jpg',
+      '/images/shoot-06-7.jpg',
+    ],
+    copy: {
+      es: {
+        tagline: 'Oliva tejida a mano. Flecos al aire. Guarda tu noche.',
+        description:
+          'El Bohemian está tejido a mano en trapillo de algodón verde oliva — punto grueso que se ve y se toca. Flecos anudados uno a uno, rematados con cuentas de cerámica, y herrajes en oro rosa. La correa trenzada se quita: bandolera de día, de mano por la noche. Nació para el festival — polvo, oro y la última luz de la tarde.',
+        details: [
+          'Trapillo de algodón verde oliva',
+          'Flecos anudados a mano con cuentas de cerámica',
+          'Asa integrada en el cuerpo del bolso',
+          'Correa trenzada extraíble',
+          'Anillas y placa en oro rosa',
+          'Cierre magnético',
+          'Hecho en Donostia',
+        ],
+        world:
+          'El Bohemian nació en la explanada de un festival, a la hora en que el polvo se vuelve oro. Del punto grueso que aguanta el día entero y de los flecos que bailan solos con la música. Se abre y lo enseña todo: lo que guarda es tu noche.',
+      },
+      en: {
+        tagline: 'Hand-woven olive. Fringe in the air. It keeps your night.',
+        description:
+          'The Bohemian is hand-woven in olive-green cotton t-shirt yarn — a chunky stitch you can see and touch. Fringe knotted strand by strand, finished with ceramic beads, and rose-gold hardware. The braided strap comes off: crossbody by day, handheld by night. Born for the festival — dust, gold and the last light of the day.',
+        details: [
+          'Olive-green cotton t-shirt yarn',
+          'Hand-knotted fringe with ceramic beads',
+          'Handle worked into the body of the bag',
+          'Detachable braided strap',
+          'Rose-gold rings and plate',
+          'Magnetic closure',
+          'Made in Donostia',
+        ],
+        world:
+          'The Bohemian was born on a festival field, at the hour when dust turns to gold. From the chunky stitch that lasts the whole day and the fringe that dances to the music on its own. It opens up and shows everything: what it keeps is your night.',
+      },
+    },
+    scrub: {
+      path: '/scrub/06',
+      frames: 90,
+      beatColor: '#4F4733',
+    },
+    theme: {
+      bg: '#E3DAC2',
+      text: '#2B2A1E',
+      accent: '#B98A68',
     },
   },
 ]

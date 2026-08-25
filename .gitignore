@@ -27,3 +27,10 @@
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# material de shooting — fuentes pesadas, no van al repo
+/Shootings
+/Productos
+
+# tooling local
+.claude-flow/
