@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Footer } from '@/components/Footer'
 import { ProductScene } from '@/components/ProductScene'
 import { ScrubBagScene } from '@/components/ScrubBagScene'
-import { ConvergeScene, EditorialScene } from '@/components/scenes'
+import { EditorialScene } from '@/components/scenes'
 import { Reveal, Parallax, Words, MaskReveal } from '@/components/motion'
 import { getProduct } from '@/lib/products'
 import { useCart } from '@/lib/cart'
@@ -39,7 +39,7 @@ export default function ProductPage() {
 
   if (!product) return null
 
-  const { copy, theme, images, shooting, price: basePrice, number } = product
+  const { copy, theme, images, shooting, lookbook, price: basePrice, number } = product
   const price = getPrice(product.id, basePrice)
   const isDark = isDarkColor(theme.bg)
   const sku = `#${/^\d+$/.test(number) ? 'P' + number : number}-001`
@@ -229,28 +229,18 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* ── LOOKBOOK ──
-         06 estrena el pliego editorial (EditorialScene): una foto a sangre cada
-         vez, cortina scrubbeada, contador. Cuando se valide, migrará al resto y
-         ConvergeScene se retira. */}
-      {shooting.length > 2 &&
-        (number === '06' ? (
-          <EditorialScene
-            bg="#15120E"
-            eyebrow={`Lookbook · ${number}`}
-            images={shooting.slice(1, 7)}
-            captions={['La entrada', 'El giro', 'De cerca', 'Última luz', 'Cara a cara', 'El campamento']}
-          />
-        ) : (
-          <ConvergeScene
-            bg={isDark ? bgColor : '#15120E'}
-            textColor="#F5F5F0"
-            eyebrow={`Lookbook · ${number}`}
-            title={number}
-            sub={copy.es.tagline.split('.')[0].toUpperCase()}
-            images={shooting.slice(1, 7)}
-          />
-        ))}
+      {/* ── LOOKBOOK ── Pliego editorial: una foto a sangre cada vez, cortina
+         scrubbeada por scroll, contador. Sustituye al ConvergeScene, cuyas fotos
+         volando desde los lados leían a recurso fácil y además montaban un
+         segundo momento heroico que competía con el héroe de la página. */}
+      {lookbook && lookbook.length > 1 && (
+        <EditorialScene
+          bg="#15120E"
+          eyebrow={`Lookbook · ${number}`}
+          images={lookbook.map((l) => l.src)}
+          captions={lookbook.map((l) => l.caption)}
+        />
+      )}
 
       {/* ── FOTOS FIJAS — galería estática para apreciar el shooting ── */}
       {shooting.length > 3 && (

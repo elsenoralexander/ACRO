@@ -128,7 +128,7 @@ export default function Home() {
           '/images/shoot-01-1.jpg',
           '/images/shoot-02-1.jpg',
           '/images/shoot-04-5.jpg',
-          '/images/shoot-03-1.png',
+          '/images/shoot-03-1.jpg',
           '/images/shoot-04-7.jpg',
         ]}
       />

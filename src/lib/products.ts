@@ -17,6 +17,9 @@ export type Product = {
     beatColor: string
   }
   shooting: string[]
+  /** Pliego editorial curado (EditorialScene). Va a sangre y de una en una,
+      así que excluye a propósito los fotomontajes: solo leen a tamaño rejilla. */
+  lookbook?: Array<{ src: string; caption: string }>
   copy: {
     es: {
       tagline: string
@@ -54,6 +57,10 @@ export const products: Product[] = [
       '/images/shoot-01-3.jpg',
       '/images/shoot-01-4.jpg',
       '/images/shoot-01-5.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-01-4.jpg', caption: 'Frente al mar' },
+      { src: '/images/shoot-01-5.jpg', caption: 'El callejón' },
     ],
     copy: {
       es: {
@@ -108,6 +115,13 @@ export const products: Product[] = [
       '/images/shoot-02-5.jpg',
       '/images/shoot-02-6.jpg',
     ],
+    lookbook: [
+      { src: '/images/shoot-02-2.jpg', caption: 'La entrada' },
+      { src: '/images/shoot-02-3.jpg', caption: 'El pasillo' },
+      { src: '/images/shoot-02-4.jpg', caption: 'La espera' },
+      { src: '/images/shoot-02-5.jpg', caption: 'Se abre' },
+      { src: '/images/shoot-02-6.jpg', caption: 'Naranja quemado' },
+    ],
     copy: {
       es: {
         tagline: 'Metal frío. Interior naranja. Una declaración.',
@@ -159,12 +173,19 @@ export const products: Product[] = [
     },
     cutout: '/spin/cutout-03.png',
     shooting: [
-      '/images/shoot-03-1.png',
-      '/images/shoot-03-2.png',
-      '/images/shoot-03-3.png',
-      '/images/shoot-03-4.png',
-      '/images/shoot-03-5.png',
-      '/images/shoot-03-6.png',
+      '/images/shoot-03-1.jpg',
+      '/images/shoot-03-2.jpg',
+      '/images/shoot-03-3.jpg',
+      '/images/shoot-03-4.jpg',
+      '/images/shoot-03-5.jpg',
+      '/images/shoot-03-6.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-03-2.jpg', caption: 'En la barra' },
+      { src: '/images/shoot-03-3.jpg', caption: 'La pista' },
+      { src: '/images/shoot-03-4.jpg', caption: 'Sin excusas' },
+      { src: '/images/shoot-03-5.jpg', caption: 'Cara a cara' },
+      { src: '/images/shoot-03-6.jpg', caption: 'Última copa' },
     ],
     copy: {
       es: {
@@ -227,6 +248,14 @@ export const products: Product[] = [
       '/images/shoot-04-7.jpg',
       '/images/shoot-04-8.jpg',
     ],
+    lookbook: [
+      { src: '/images/shoot-04-2.jpg', caption: 'La bajada' },
+      { src: '/images/shoot-04-3.jpg', caption: 'El descanso' },
+      { src: '/images/shoot-04-4.jpg', caption: 'Los tejados' },
+      { src: '/images/shoot-04-5.jpg', caption: 'El callejón' },
+      { src: '/images/shoot-04-6.jpg', caption: 'El café' },
+      { src: '/images/shoot-04-7.jpg', caption: 'Hora dorada' },
+    ],
     copy: {
       es: {
         tagline: 'Cacao tejido. Cuentas de oro. Hora dorada.',
@@ -286,6 +315,14 @@ export const products: Product[] = [
       '/images/shoot-05-5.jpg',
       '/images/shoot-05-6.jpg',
       '/images/shoot-05-7.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-05-2.jpg', caption: 'El campo' },
+      { src: '/images/shoot-05-3.jpg', caption: 'Rozar los tallos' },
+      { src: '/images/shoot-05-4.jpg', caption: 'La pausa' },
+      { src: '/images/shoot-05-5.jpg', caption: 'De cerca' },
+      { src: '/images/shoot-05-6.jpg', caption: 'Sobre la piedra' },
+      { src: '/images/shoot-05-7.jpg', caption: 'Campo abierto' },
     ],
     copy: {
       es: {
@@ -348,6 +385,14 @@ export const products: Product[] = [
       '/images/shoot-06-5.jpg',
       '/images/shoot-06-6.jpg',
       '/images/shoot-06-7.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-06-2.jpg', caption: 'La entrada' },
+      { src: '/images/shoot-06-3.jpg', caption: 'El giro' },
+      { src: '/images/shoot-06-4.jpg', caption: 'De cerca' },
+      { src: '/images/shoot-06-5.jpg', caption: 'Última luz' },
+      { src: '/images/shoot-06-6.jpg', caption: 'Cara a cara' },
+      { src: '/images/shoot-06-7.jpg', caption: 'El campamento' },
     ],
     copy: {
       es: {
