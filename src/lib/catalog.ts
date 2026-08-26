@@ -62,20 +62,33 @@ function readLocalCatalog(): CatalogData {
   }
 }
 
+/**
+ * Lee el blob. Devuelve null SOLO si de verdad no existe todavía (primer
+ * arranque). Cualquier otro fallo se propaga: un catálogo "por defecto"
+ * devuelto por un error de lectura acaba escribiéndose encima del real y se
+ * lleva por delante el stock. Ese fue justo el bug de "pongo uno a 0 y se me
+ * suben los demás".
+ */
+async function loadFromBlob(token: string): Promise<CatalogData | null> {
+  const { list } = await import('@vercel/blob')
+  const { blobs } = await list({ prefix: BLOB_PATHNAME, token })
+  const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME)
+  if (!blob) return null
+  const res = await fetch(blob.url, {
+    cache: 'no-store',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) throw new Error(`blob ${res.status} al leer ${BLOB_PATHNAME}`)
+  return mergeCatalog(await res.json())
+}
+
+/** Lectura tolerante, para la tienda: ante un fallo, enseñar algo es mejor que romper. */
 export async function getCatalog(): Promise<CatalogData> {
   const token = getBlobToken()
   if (token) {
     try {
-      const { list } = await import('@vercel/blob')
-      const { blobs } = await list({ prefix: BLOB_PATHNAME, token })
-      const blob = blobs.find((b) => b.pathname === BLOB_PATHNAME)
-      if (blob) {
-        const res = await fetch(blob.url, {
-          cache: 'no-store',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (res.ok) return mergeCatalog(await res.json())
-      }
+      const fromBlob = await loadFromBlob(token)
+      if (fromBlob) return fromBlob
     } catch (err) {
       console.error('[catalog] getCatalog error:', err)
     }
@@ -83,16 +96,29 @@ export async function getCatalog(): Promise<CatalogData> {
   return readLocalCatalog()
 }
 
+/**
+ * Lectura estricta, para el panel de admin. Nunca devuelve el fallback del
+ * repo cuando hay blob configurado: quien vaya a ESCRIBIR tiene que partir del
+ * estado real o no escribir en absoluto.
+ */
+export async function getCatalogForWrite(): Promise<CatalogData> {
+  const token = getBlobToken()
+  if (!token) return readLocalCatalog()
+  const fromBlob = await loadFromBlob(token)
+  return fromBlob ?? readLocalCatalog() // null = aún no existe, hay que sembrarlo
+}
+
 export async function saveCatalog(catalog: CatalogData): Promise<void> {
   const token = getBlobToken()
   if (token) {
-    const { put, del, list } = await import('@vercel/blob')
-    const { blobs } = await list({ prefix: BLOB_PATHNAME, token })
-    const existing = blobs.find((b) => b.pathname === BLOB_PATHNAME)
-    if (existing) await del(existing.url, { token })
+    // Sobrescribir en el sitio. El `del` + `put` de antes dejaba una ventana en
+    // la que el catálogo NO EXISTÍA; una lectura que cayera ahí se llevaba el
+    // fallback del repo (stock 1 en todo) y lo reescribía como si fuera bueno.
+    const { put } = await import('@vercel/blob')
     await put(BLOB_PATHNAME, JSON.stringify(catalog), {
       access: 'private',
       addRandomSuffix: false,
+      allowOverwrite: true,
       token,
     })
     return
