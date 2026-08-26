@@ -9,7 +9,17 @@ export type Product = {
     views: string[]
   }
   cutout?: string // high-def transparent PNG for the motion-graphics scene
+  /** Scroll-scrubbed hero clip (frames in public/scrub/<id>). Presence = showcase PDP. */
+  scrub?: {
+    path: string // e.g. '/scrub/06'
+    frames: number
+    /** Colour for the narrative beats over the clip. */
+    beatColor: string
+  }
   shooting: string[]
+  /** Pliego editorial curado (EditorialScene). Va a sangre y de una en una,
+      así que excluye a propósito los fotomontajes: solo leen a tamaño rejilla. */
+  lookbook?: Array<{ src: string; caption: string }>
   copy: {
     es: {
       tagline: string
@@ -47,6 +57,10 @@ export const products: Product[] = [
       '/images/shoot-01-3.jpg',
       '/images/shoot-01-4.jpg',
       '/images/shoot-01-5.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-01-4.jpg', caption: 'Frente al mar' },
+      { src: '/images/shoot-01-5.jpg', caption: 'El callejón' },
     ],
     copy: {
       es: {
@@ -101,6 +115,13 @@ export const products: Product[] = [
       '/images/shoot-02-5.jpg',
       '/images/shoot-02-6.jpg',
     ],
+    lookbook: [
+      { src: '/images/shoot-02-2.jpg', caption: 'La entrada' },
+      { src: '/images/shoot-02-3.jpg', caption: 'El pasillo' },
+      { src: '/images/shoot-02-4.jpg', caption: 'La espera' },
+      { src: '/images/shoot-02-5.jpg', caption: 'Se abre' },
+      { src: '/images/shoot-02-6.jpg', caption: 'Naranja quemado' },
+    ],
     copy: {
       es: {
         tagline: 'Metal frío. Interior naranja. Una declaración.',
@@ -152,12 +173,19 @@ export const products: Product[] = [
     },
     cutout: '/spin/cutout-03.png',
     shooting: [
-      '/images/shoot-03-1.png',
-      '/images/shoot-03-2.png',
-      '/images/shoot-03-3.png',
-      '/images/shoot-03-4.png',
-      '/images/shoot-03-5.png',
-      '/images/shoot-03-6.png',
+      '/images/shoot-03-1.jpg',
+      '/images/shoot-03-2.jpg',
+      '/images/shoot-03-3.jpg',
+      '/images/shoot-03-4.jpg',
+      '/images/shoot-03-5.jpg',
+      '/images/shoot-03-6.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-03-2.jpg', caption: 'En la barra' },
+      { src: '/images/shoot-03-3.jpg', caption: 'La pista' },
+      { src: '/images/shoot-03-4.jpg', caption: 'Sin excusas' },
+      { src: '/images/shoot-03-5.jpg', caption: 'Cara a cara' },
+      { src: '/images/shoot-03-6.jpg', caption: 'Última copa' },
     ],
     copy: {
       es: {
@@ -220,6 +248,14 @@ export const products: Product[] = [
       '/images/shoot-04-7.jpg',
       '/images/shoot-04-8.jpg',
     ],
+    lookbook: [
+      { src: '/images/shoot-04-2.jpg', caption: 'La bajada' },
+      { src: '/images/shoot-04-3.jpg', caption: 'El descanso' },
+      { src: '/images/shoot-04-4.jpg', caption: 'Los tejados' },
+      { src: '/images/shoot-04-5.jpg', caption: 'El callejón' },
+      { src: '/images/shoot-04-6.jpg', caption: 'El café' },
+      { src: '/images/shoot-04-7.jpg', caption: 'Hora dorada' },
+    ],
     copy: {
       es: {
         tagline: 'Cacao tejido. Cuentas de oro. Hora dorada.',
@@ -280,6 +316,14 @@ export const products: Product[] = [
       '/images/shoot-05-6.jpg',
       '/images/shoot-05-7.jpg',
     ],
+    lookbook: [
+      { src: '/images/shoot-05-2.jpg', caption: 'El campo' },
+      { src: '/images/shoot-05-3.jpg', caption: 'Rozar los tallos' },
+      { src: '/images/shoot-05-4.jpg', caption: 'La pausa' },
+      { src: '/images/shoot-05-5.jpg', caption: 'De cerca' },
+      { src: '/images/shoot-05-6.jpg', caption: 'Sobre la piedra' },
+      { src: '/images/shoot-05-7.jpg', caption: 'Campo abierto' },
+    ],
     copy: {
       es: {
         tagline: 'Margaritas tejidas. Lino crudo. Campo abierto.',
@@ -314,10 +358,85 @@ export const products: Product[] = [
           "The 05 was born in a field of wildflowers at dusk. From the light slipping between the stems, from Queen Anne's lace, from that slow summer in no hurry. Each daisy is woven by hand — like the ones that grow, one by one, with no mould.",
       },
     },
+    scrub: {
+      path: '/scrub/05',
+      frames: 90,
+      beatColor: '#5A4632',
+    },
     theme: {
       bg: '#EFEADD',
       text: '#2A2417',
       accent: '#8F9779',
+    },
+  },
+  {
+    id: '06',
+    number: '06',
+    price: 135,
+    images: {
+      main: '/images/product-06.jpg',
+      views: ['/images/product-06.jpg', '/images/product-06-detail-1.jpg'],
+    },
+    shooting: [
+      '/images/shoot-06-1.jpg',
+      '/images/shoot-06-2.jpg',
+      '/images/shoot-06-3.jpg',
+      '/images/shoot-06-4.jpg',
+      '/images/shoot-06-5.jpg',
+      '/images/shoot-06-6.jpg',
+      '/images/shoot-06-7.jpg',
+    ],
+    lookbook: [
+      { src: '/images/shoot-06-2.jpg', caption: 'La entrada' },
+      { src: '/images/shoot-06-3.jpg', caption: 'El giro' },
+      { src: '/images/shoot-06-4.jpg', caption: 'De cerca' },
+      { src: '/images/shoot-06-5.jpg', caption: 'Última luz' },
+      { src: '/images/shoot-06-6.jpg', caption: 'Cara a cara' },
+      { src: '/images/shoot-06-7.jpg', caption: 'El campamento' },
+    ],
+    copy: {
+      es: {
+        tagline: 'Oliva tejida a mano. Flecos al aire. Guarda tu noche.',
+        description:
+          'El Bohemian está tejido a mano en trapillo de algodón verde oliva — punto grueso que se ve y se toca. Flecos anudados uno a uno, rematados con cuentas de cerámica, y herrajes en oro rosa. La correa trenzada se quita: bandolera de día, de mano por la noche. Nació para el festival — polvo, oro y la última luz de la tarde.',
+        details: [
+          'Trapillo de algodón verde oliva',
+          'Flecos anudados a mano con cuentas de cerámica',
+          'Asa integrada en el cuerpo del bolso',
+          'Correa trenzada extraíble',
+          'Anillas y placa en oro rosa',
+          'Cierre magnético',
+          'Hecho en Donostia',
+        ],
+        world:
+          'El Bohemian nació en la explanada de un festival, a la hora en que el polvo se vuelve oro. Del punto grueso que aguanta el día entero y de los flecos que bailan solos con la música. Se abre y lo enseña todo: lo que guarda es tu noche.',
+      },
+      en: {
+        tagline: 'Hand-woven olive. Fringe in the air. It keeps your night.',
+        description:
+          'The Bohemian is hand-woven in olive-green cotton t-shirt yarn — a chunky stitch you can see and touch. Fringe knotted strand by strand, finished with ceramic beads, and rose-gold hardware. The braided strap comes off: crossbody by day, handheld by night. Born for the festival — dust, gold and the last light of the day.',
+        details: [
+          'Olive-green cotton t-shirt yarn',
+          'Hand-knotted fringe with ceramic beads',
+          'Handle worked into the body of the bag',
+          'Detachable braided strap',
+          'Rose-gold rings and plate',
+          'Magnetic closure',
+          'Made in Donostia',
+        ],
+        world:
+          'The Bohemian was born on a festival field, at the hour when dust turns to gold. From the chunky stitch that lasts the whole day and the fringe that dances to the music on its own. It opens up and shows everything: what it keeps is your night.',
+      },
+    },
+    scrub: {
+      path: '/scrub/06',
+      frames: 90,
+      beatColor: '#4F4733',
+    },
+    theme: {
+      bg: '#E3DAC2',
+      text: '#2B2A1E',
+      accent: '#B98A68',
     },
   },
 ]

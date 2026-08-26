@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Footer } from '@/components/Footer'
 import { ProductScene } from '@/components/ProductScene'
 import { ScrubBagScene } from '@/components/ScrubBagScene'
-import { ConvergeScene } from '@/components/scenes'
+import { EditorialScene } from '@/components/scenes'
 import { Reveal, Parallax, Words, MaskReveal } from '@/components/motion'
 import { getProduct } from '@/lib/products'
 import { useCart } from '@/lib/cart'
@@ -39,23 +39,20 @@ export default function ProductPage() {
 
   if (!product) return null
 
-  const { copy, theme, images, shooting, price: basePrice, number } = product
+  const { copy, theme, images, shooting, lookbook, price: basePrice, number } = product
   const price = getPrice(product.id, basePrice)
   const isDark = isDarkColor(theme.bg)
   const sku = `#${/^\d+$/.test(number) ? 'P' + number : number}-001`
   const heroImage = product.cutout ?? (isDark && images.dark ? images.dark : images.main)
-  // El 05 (tote de margaritas) tiene un clip de transición scrubbeado como hero.
-  // Reutilizamos ese bolso como lienzo: los beats del tagline aparecen ENCIMA del
-  // clip mientras se transforma, en vez de repetir el bolso en una ProductScene.
-  const isShowcase = number === '05'
-  const SCRUB_FRAMES = 90
+  // Los productos con clip scrubbeado (05, 06…) usan el hero showcase: los beats
+  // del tagline aparecen ENCIMA del clip mientras se transforma, en vez de
+  // repetir el bolso en una ProductScene.
+  const scrub = product.scrub
+  const isShowcase = Boolean(scrub)
   const showcaseBeats = isShowcase
     ? copy.es.tagline.split('.').map((s) => s.trim().toUpperCase()).filter(Boolean)
     : []
   const showcaseMeta = `${price}€ · Hecho en Donostia`
-  // Marrón cálido para los beats — oscuro pero más claro que el casi-negro del
-  // tema, para que no pese tanto sobre el crema.
-  const beatColor = '#5A4632'
 
   const handleAdd = () => {
     addItem(product)
@@ -102,15 +99,15 @@ export default function ProductPage() {
       {/* ── HERO ──────────────────────────────────────────────
          El 05 usa un clip scrubbeado (bolso → margaritas → bolso) a sangre
          completa; el resto, el recorte flotando. */}
-      {isShowcase ? (
+      {isShowcase && scrub ? (
         <ScrubBagScene
-          framePath={(i) => `/scrub/05/frame_${String(i).padStart(4, '0')}.webp`}
-          frameCount={SCRUB_FRAMES}
+          framePath={(i) => `${scrub.path}/frame_${String(i).padStart(4, '0')}.webp`}
+          frameCount={scrub.frames}
           bg={bgColor}
           height={`${(1 + showcaseBeats.length) * 100}vh`}
           beats={showcaseBeats}
           meta={showcaseMeta}
-          textColor={beatColor}
+          textColor={scrub.beatColor}
         >
           {/* Panel de info/compra — ocupa el primer viewport y SCROLLEA sobre el
              clip fijo; el velo viaja con el texto para mantener la legibilidad. */}
@@ -118,7 +115,15 @@ export default function ProductPage() {
             data-tone="light"
             className="relative min-h-[100svh] flex flex-col justify-end md:justify-center md:items-end px-7 md:px-16 pb-16 md:pb-0"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#EFEADD]/95 via-[#EFEADD]/10 to-transparent md:bg-gradient-to-l md:from-[#EFEADD]/85 md:via-[#EFEADD]/5 md:to-transparent" />
+            {/* Velo con el bg del tema — móvil desde abajo, desktop desde la derecha. */}
+            <div
+              className="pointer-events-none absolute inset-0 md:hidden"
+              style={{ background: `linear-gradient(to top, ${bgColor}F2, ${bgColor}1A 55%, transparent)` }}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 hidden md:block"
+              style={{ background: `linear-gradient(to left, ${bgColor}D9, ${bgColor}0D 55%, transparent)` }}
+            />
             <div className="relative flex flex-col w-full max-w-sm md:items-end md:text-right">
               <div className="unique-stamp inline-block self-start md:self-end mb-6" style={{ color: txtColor, borderColor: txtColor, opacity: 0.5 }}>
                 Pieza Única · One of a Kind
@@ -224,15 +229,16 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* ── JUEGO CON LAS FOTOS — convergen desde los lados ── */}
-      {shooting.length > 2 && (
-        <ConvergeScene
-          bg={isDark ? bgColor : '#15120E'}
-          textColor="#F5F5F0"
+      {/* ── LOOKBOOK ── Pliego editorial: una foto a sangre cada vez, cortina
+         scrubbeada por scroll, contador. Sustituye al ConvergeScene, cuyas fotos
+         volando desde los lados leían a recurso fácil y además montaban un
+         segundo momento heroico que competía con el héroe de la página. */}
+      {lookbook && lookbook.length > 1 && (
+        <EditorialScene
+          bg="#15120E"
           eyebrow={`Lookbook · ${number}`}
-          title={number}
-          sub={copy.es.tagline.split('.')[0].toUpperCase()}
-          images={shooting.slice(1, 7)}
+          images={lookbook.map((l) => l.src)}
+          captions={lookbook.map((l) => l.caption)}
         />
       )}
 
