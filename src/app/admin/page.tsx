@@ -63,6 +63,28 @@ export default function AdminPage() {
     setSaving((s) => ({ ...s, [productId]: false }))
   }
 
+  /* Todo agotado en UNA petición. Hacerlo producto a producto lanzaba varias
+     escrituras a la vez sobre el mismo documento y unas pisaban a otras. */
+  async function setAllStock(quantity: number) {
+    setSaving((s) => ({ ...s, __all: true }))
+    const res = await fetch('/api/catalog', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quantityForAll: quantity }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setCatalog(data.catalog)
+      setMsg('__all', quantity === 0 ? 'Todo agotado' : 'Actualizado', true)
+    } else if (res.status === 401) {
+      router.push('/admin/login')
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setMsg('__all', data.error || 'Error', false)
+    }
+    setSaving((s) => ({ ...s, __all: false }))
+  }
+
   async function handleLogout() {
     await fetch('/api/admin/logout', { method: 'POST' })
     router.push('/admin/login')
@@ -92,6 +114,29 @@ export default function AdminPage() {
           <p className="font-sans text-sm text-white/30 tracking-widest">Cargando...</p>
         ) : (
           <div className="space-y-3">
+            {/* Acciones sobre toda la colección */}
+            <div className="flex items-center gap-3 pb-2">
+              <button
+                onClick={() => setAllStock(0)}
+                disabled={saving.__all}
+                className="font-sans text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white border border-white/15 hover:border-white/40 px-4 py-2 transition-all disabled:opacity-20"
+              >
+                {saving.__all ? 'Guardando...' : 'Marcar todo agotado'}
+              </button>
+              <button
+                onClick={() => setAllStock(1)}
+                disabled={saving.__all}
+                className="font-sans text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white border border-white/15 hover:border-white/40 px-4 py-2 transition-all disabled:opacity-20"
+              >
+                Todo a 1
+              </button>
+              {messages.__all && (
+                <span className={`font-sans text-[9px] tracking-widest ${messages.__all.ok ? 'text-emerald-400/80' : 'text-red-400/80'}`}>
+                  {messages.__all.text}
+                </span>
+              )}
+            </div>
+
             {products.map((p) => {
               const qty = catalog.stock[p.id] ?? 0
               const isOut = qty === 0
@@ -160,6 +205,14 @@ export default function AdminPage() {
                           className="w-9 h-9 border border-white/15 text-white/60 hover:text-white hover:border-white/40 transition-all font-sans text-lg flex items-center justify-center disabled:opacity-20"
                         >
                           +
+                        </button>
+                        <button
+                          onClick={() => updateField(p.id, { quantity: 0 })}
+                          disabled={isSaving || qty === 0}
+                          title="Agotar esta pieza"
+                          className="ml-2 font-sans text-[10px] tracking-[0.25em] uppercase text-white/40 hover:text-white border border-white/15 hover:border-white/40 px-3 h-9 transition-all disabled:opacity-20"
+                        >
+                          Agotar
                         </button>
                       </div>
                     </div>

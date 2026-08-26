@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCatalog, saveCatalog } from '@/lib/catalog'
+import { getCatalog, getCatalogForWrite, saveCatalog } from '@/lib/catalog'
 import { verifyAdminToken, COOKIE_NAME } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -16,35 +16,55 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json() as {
-    productId: string
+    productId?: string
     quantity?: number
     price?: number
     discount?: number
+    /** Pone ESA cantidad en todos los productos, en una sola escritura. */
+    quantityForAll?: number
   }
 
-  const { productId, quantity, price, discount } = body
+  const { productId, quantity, price, discount, quantityForAll } = body
 
-  if (!productId) {
+  if (!productId && quantityForAll === undefined) {
     return NextResponse.json({ error: 'productId requerido' }, { status: 400 })
   }
 
-  const catalog = await getCatalog()
+  // Estricta a propósito: si el estado real no se puede leer, no se escribe.
+  let catalog
+  try {
+    catalog = await getCatalogForWrite()
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[api/catalog] lectura previa fallida, no se escribe:', msg)
+    return NextResponse.json({ error: 'No se pudo leer el catálogo; no se ha guardado nada' }, { status: 503 })
+  }
 
-  if (quantity !== undefined) {
+  // Masivo: una única lectura-escritura en vez de N peticiones compitiendo.
+  if (quantityForAll !== undefined) {
+    if (typeof quantityForAll !== 'number' || quantityForAll < 0) {
+      return NextResponse.json({ error: 'Cantidad inválida' }, { status: 400 })
+    }
+    for (const id of Object.keys(catalog.stock)) {
+      catalog.stock[id] = Math.floor(quantityForAll)
+    }
+  }
+
+  if (productId && quantity !== undefined) {
     if (typeof quantity !== 'number' || quantity < 0) {
       return NextResponse.json({ error: 'Cantidad inválida' }, { status: 400 })
     }
     catalog.stock[productId] = Math.floor(quantity)
   }
 
-  if (price !== undefined) {
+  if (productId && price !== undefined) {
     if (typeof price !== 'number' || price < 0) {
       return NextResponse.json({ error: 'Precio inválido' }, { status: 400 })
     }
     catalog.prices[productId] = price
   }
 
-  if (discount !== undefined) {
+  if (productId && discount !== undefined) {
     if (typeof discount !== 'number' || discount < 0 || discount > 100) {
       return NextResponse.json({ error: 'Descuento inválido (0-100)' }, { status: 400 })
     }
