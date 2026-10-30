@@ -22,11 +22,13 @@ export async function PUT(req: NextRequest) {
     discount?: number
     /** Pone ESA cantidad en todos los productos, en una sola escritura. */
     quantityForAll?: number
+    /** Abre o cierra la tienda (ver CatalogData.open). */
+    open?: boolean
   }
 
-  const { productId, quantity, price, discount, quantityForAll } = body
+  const { productId, quantity, price, discount, quantityForAll, open } = body
 
-  if (!productId && quantityForAll === undefined) {
+  if (!productId && quantityForAll === undefined && open === undefined) {
     return NextResponse.json({ error: 'productId requerido' }, { status: 400 })
   }
 
@@ -48,6 +50,13 @@ export async function PUT(req: NextRequest) {
     for (const id of Object.keys(catalog.stock)) {
       catalog.stock[id] = Math.floor(quantityForAll)
     }
+  }
+
+  if (open !== undefined) {
+    if (typeof open !== 'boolean') {
+      return NextResponse.json({ error: 'Estado de tienda inválido' }, { status: 400 })
+    }
+    catalog.open = open
   }
 
   if (productId && quantity !== undefined) {

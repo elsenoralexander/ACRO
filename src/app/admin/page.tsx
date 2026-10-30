@@ -9,6 +9,7 @@ type CatalogData = {
   stock: Record<string, number>
   prices: Record<string, number>
   discounts: Record<string, number>
+  open?: boolean
 }
 
 type Saving = Record<string, boolean>
@@ -75,7 +76,7 @@ export default function AdminPage() {
     if (res.ok) {
       const data = await res.json()
       setCatalog(data.catalog)
-      setMsg('__all', quantity === 0 ? 'Todo agotado' : 'Actualizado', true)
+      setMsg('__all', quantity === 0 ? 'Todo a 0' : 'Actualizado', true)
     } else if (res.status === 401) {
       router.push('/admin/login')
     } else {
@@ -83,6 +84,28 @@ export default function AdminPage() {
       setMsg('__all', data.error || 'Error', false)
     }
     setSaving((s) => ({ ...s, __all: false }))
+  }
+
+  /* Abrir o cerrar la tienda. Cerrada, una pieza sin stock sale como
+     «Próximamente»; abierta, como «Vendida». */
+  async function setShopOpen(open: boolean) {
+    setSaving((s) => ({ ...s, __open: true }))
+    const res = await fetch('/api/catalog', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ open }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setCatalog(data.catalog)
+      setMsg('__open', open ? 'Tienda abierta' : 'Tienda en «Próximamente»', true)
+    } else if (res.status === 401) {
+      router.push('/admin/login')
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setMsg('__open', data.error || 'Error', false)
+    }
+    setSaving((s) => ({ ...s, __open: false }))
   }
 
   async function handleLogout() {
@@ -114,6 +137,37 @@ export default function AdminPage() {
           <p className="font-sans text-sm text-white/30 tracking-widest">Cargando...</p>
         ) : (
           <div className="space-y-3">
+            {/* Estado de la tienda */}
+            <div className="border border-white/10 bg-white/[0.02] p-5 md:p-6 mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="font-sans text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">Estado de la tienda</p>
+                  <p className="font-bebas text-3xl text-white leading-none">
+                    {catalog.open ? 'Abierta' : 'Próximamente'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {messages.__open && (
+                    <span className={`font-sans text-[9px] tracking-widest ${messages.__open.ok ? 'text-emerald-400/80' : 'text-red-400/80'}`}>
+                      {messages.__open.text}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setShopOpen(!catalog.open)}
+                    disabled={saving.__open}
+                    className="font-sans text-[10px] tracking-[0.25em] uppercase text-white/70 hover:text-white border border-white/25 hover:border-white/60 px-4 py-2 transition-all disabled:opacity-20"
+                  >
+                    {saving.__open ? 'Guardando...' : catalog.open ? 'Volver a «Próximamente»' : 'Abrir la tienda'}
+                  </button>
+                </div>
+              </div>
+              <p className="mt-4 font-sans text-[11px] text-white/50 leading-relaxed max-w-xl">
+                {catalog.open
+                  ? 'Abierta: una pieza con stock 0 sale en la web como «Vendida».'
+                  : 'Cerrada: una pieza con stock 0 sale en la web como «Próximamente». Ábrela cuando empiecen las ventas.'}
+              </p>
+            </div>
+
             {/* Acciones sobre toda la colección */}
             <div className="flex items-center gap-3 pb-2">
               <button
@@ -121,7 +175,7 @@ export default function AdminPage() {
                 disabled={saving.__all}
                 className="font-sans text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white border border-white/15 hover:border-white/40 px-4 py-2 transition-all disabled:opacity-20"
               >
-                {saving.__all ? 'Guardando...' : 'Marcar todo agotado'}
+                {saving.__all ? 'Guardando...' : 'Todo a 0'}
               </button>
               <button
                 onClick={() => setAllStock(1)}
@@ -177,7 +231,7 @@ export default function AdminPage() {
                           ? 'text-red-400/80 border-red-400/30'
                           : 'text-emerald-400/80 border-emerald-400/30'
                       }`}>
-                        {isOut ? 'Agotado' : 'Disponible'}
+                        {isOut ? (catalog.open ? 'Vendida' : 'Próximamente') : 'Disponible'}
                       </span>
                     </div>
                   </div>
@@ -290,8 +344,8 @@ export default function AdminPage() {
           </div>
         )}
 
-        <p className="mt-8 font-sans text-[9px] text-white/10 tracking-wide leading-relaxed">
-          Stock 0 → fuera de stock en tienda. Los precios se aplican en el checkout.
+        <p className="mt-8 font-sans text-[10px] text-white/45 tracking-wide leading-relaxed">
+          Stock 0 → «Próximamente» con la tienda cerrada, «Vendida» con la tienda abierta. Los precios se aplican en el checkout.
         </p>
       </div>
     </div>
