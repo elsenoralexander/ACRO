@@ -11,9 +11,8 @@ import { Reveal, MaskReveal, Words } from '@/components/motion'
    de cada bolso aparece al pasar el ratón; en táctil está siempre, porque si
    no la clienta del móvil no lo vería nunca. */
 export function CollectionGrid() {
-  const { catalog, getPrice, getStock } = useCatalog()
-  const soldCount = catalog ? products.filter((p) => getStock(p.id) === 0).length : 0
-  const availableCount = products.length - soldCount
+  const { getPrice, getState, summary } = useCatalog()
+  const inventory = summary(products.map((p) => p.id))
 
   return (
     <div className="bg-white text-ink pt-32 md:pt-40 pb-24 px-6 md:px-10 overflow-hidden">
@@ -44,19 +43,17 @@ export function CollectionGrid() {
               </p>
             </Reveal>
           </div>
-          {catalog && (
+          {inventory && (
             <Reveal delay={0.3}>
-              <p className="mt-10 font-sans text-[10px] tracking-[0.3em] uppercase text-ink/60">
-                {availableCount} {availableCount === 1 ? 'disponible' : 'disponibles'}
-                {soldCount > 0 && ` · ${soldCount} ${soldCount === 1 ? 'vendida' : 'vendidas'}`}
-              </p>
+              <p className="mt-10 font-sans text-[10px] tracking-[0.3em] uppercase text-ink/60">{inventory}</p>
             </Reveal>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-16 md:gap-y-28">
           {products.map((p, i) => {
-            const sold = getStock(p.id) === 0
+            const state = getState(p.id)
+            const sold = state === 'sold'
             const price = getPrice(p.id, p.price)
             const name = p.copy.es.tagline.split('.')[0]
             return (
@@ -64,7 +61,7 @@ export function CollectionGrid() {
                 key={p.id}
                 href={`/coleccion/${p.id}`}
                 data-cursor="view"
-                aria-label={`ACRO ${p.number}, ${name}${sold ? ', vendida' : `, ${price} euros`}`}
+                aria-label={`ACRO ${p.number}, ${name}, ${sold ? 'vendida' : state === 'soon' ? `próximamente, ${price} euros` : `${price} euros`}`}
                 className={`press group block focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink/40 ${
                   i % 2 === 1 ? 'md:mt-24' : ''
                 }`}

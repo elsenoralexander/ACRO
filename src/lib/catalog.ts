@@ -6,6 +6,10 @@ export type CatalogData = {
   stock: Record<string, number>
   prices: Record<string, number>
   discounts: Record<string, number> // 0-100 percentage
+  /** Tienda abierta. Con ella cerrada (antes del lanzamiento o en pausa) una
+      pieza sin stock es «Próximamente»; abierta, una pieza sin stock es
+      «Vendida». Sin este dato no hay forma de distinguir una cosa de la otra. */
+  open: boolean
 }
 
 const CATALOG_FILE = path.join(process.cwd(), 'src/data/catalog.json')
@@ -20,7 +24,7 @@ function defaultCatalog(): CatalogData {
     prices[p.id] = p.price
     discounts[p.id] = 0
   }
-  return { stock, prices, discounts }
+  return { stock, prices, discounts, open: false }
 }
 
 // Merges stored data with defaults so new products always initialize correctly
@@ -34,6 +38,7 @@ function mergeCatalog(stored: unknown): CatalogData {
       stock: { ...defaults.stock, ...(s as Record<string, number>) },
       prices: defaults.prices,
       discounts: defaults.discounts,
+      open: false,
     }
   }
 
@@ -42,6 +47,9 @@ function mergeCatalog(stored: unknown): CatalogData {
     stock: { ...defaults.stock, ...(d.stock ?? {}) },
     prices: { ...defaults.prices, ...(d.prices ?? {}) },
     discounts: { ...defaults.discounts, ...(d.discounts ?? {}) },
+    // Ausente = cerrada: el catálogo publicado no tenía este campo y entonces
+    // todo estaba a 0 porque la tienda aún no había abierto, no por ventas.
+    open: typeof d.open === 'boolean' ? d.open : false,
   }
 }
 

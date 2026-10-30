@@ -26,12 +26,14 @@ export default function ProductPage() {
   const router = useRouter()
   const product = getProduct(params.id as string)
   const { addItem, items } = useCart()
-  const { getPrice, getStock } = useCatalog()
+  const { getPrice, getStock, getState } = useCatalog()
   const [added, setAdded] = useState(false)
 
   const inCart = items.some((i) => i.product.id === product?.id)
   const catalogStock = product ? getStock(product.id) : null
   const outOfStock = catalogStock === 0
+  // Sin stock: «Próximamente» con la tienda cerrada, «Vendida» con ella abierta.
+  const unavailableLabel = product && getState(product.id) === 'sold' ? 'Vendida' : 'Próximamente'
 
   useEffect(() => {
     if (!product) router.push('/coleccion')
@@ -70,7 +72,7 @@ export default function ProductPage() {
         className={`${big ? 'text-2xl py-5 px-14' : 'text-xl py-4 px-8 w-full max-w-xs'} font-bebas tracking-[0.2em] border-2 text-center select-none`}
         style={{ borderColor: txtColor, color: txtColor, opacity: 0.3 }}
       >
-        Fuera de stock
+        {unavailableLabel}
       </div>
     ) : (
       <button
@@ -295,7 +297,11 @@ export default function ProductPage() {
         </Reveal>
         <p className="font-bebas text-6xl md:text-8xl mb-2" style={{ color: txtColor }}>{price}€</p>
         <p className="font-sans text-xs mb-12" style={{ color: txtColor, opacity: 0.35 }}>
-          {outOfStock ? 'Pieza agotada · Sold out' : 'Una sola unidad disponible · Only one available'}
+          {outOfStock
+            ? unavailableLabel === 'Vendida'
+              ? 'Pieza vendida · Sold'
+              : 'Próximamente · Coming soon'
+            : 'Una sola unidad disponible · Only one available'}
         </p>
         <AddButton big />
       </section>

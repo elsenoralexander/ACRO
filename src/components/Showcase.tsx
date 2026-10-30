@@ -95,7 +95,7 @@ export function Showcase() {
     tx: 0, ty: 0, cx: 0, cy: 0, svx: 0, svy: 0, zoom: 1,
     lastInput: 0, running: false, dragging: false, suppressClick: false, down: null,
   })
-  const { catalog, getPrice, getStock } = useCatalog()
+  const { getPrice, getState, summary } = useCatalog()
 
   const placed = useMemo(() => (dims ? place(dims.cell) : []), [dims])
 
@@ -381,8 +381,7 @@ export function Showcase() {
 
   // Inventario real, del catálogo: solo se enseña cuando ha llegado.
   const ids = Array.from(new Set(ITEMS.flatMap((it) => (it.kind === 'bag' ? [it.productId] : []))))
-  const soldCount = catalog ? ids.filter((id) => getStock(id) === 0).length : 0
-  const availableCount = ids.length - soldCount
+  const inventory = summary(ids)
 
   return (
     <section data-tone="light" className="relative h-[100svh] w-full overflow-hidden bg-chalk">
@@ -428,7 +427,8 @@ export function Showcase() {
 
             const product = getProduct(it.productId)
             if (!product) return null
-            const sold = getStock(it.productId) === 0
+            const state = getState(it.productId)
+            const sold = state === 'sold'
             const name = product.copy.es.tagline.split('.')[0]
 
             if (it.kind === 'bag') {
@@ -441,7 +441,7 @@ export function Showcase() {
                   style={style}
                   draggable={false}
                   data-cursor="view"
-                  aria-label={`ACRO ${product.number}, ${name}${sold ? ', vendida' : `, ${price} euros`}`}
+                  aria-label={`ACRO ${product.number}, ${name}, ${sold ? 'vendida' : state === 'soon' ? `próximamente, ${price} euros` : `${price} euros`}`}
                   className={`sc-item sc-bag ${sold ? 'sc-sold' : ''}`}
                 >
                   <span className="sc-lift">
@@ -522,12 +522,7 @@ export function Showcase() {
             </p>
           </div>
           <div className="flex items-center justify-between gap-6 md:flex-col md:items-end md:gap-3">
-            {catalog && (
-              <p className="sc-micro">
-                {availableCount} {availableCount === 1 ? 'disponible' : 'disponibles'}
-                {soldCount > 0 && ` · ${soldCount} ${soldCount === 1 ? 'vendida' : 'vendidas'}`}
-              </p>
-            )}
+            {inventory && <p className="sc-micro">{inventory}</p>}
             <Link
               href="/coleccion"
               className="press pointer-events-auto -m-2 inline-flex items-center gap-2 p-2 font-sans text-[11px] uppercase tracking-[0.3em] text-ink"
