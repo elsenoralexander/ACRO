@@ -20,6 +20,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  // Las imágenes de Open Graph necesitan URL absoluta; sin esto Next las
+  // resuelve contra localhost.
+  metadataBase: new URL('https://acro-beryl.vercel.app'),
   title: 'ACRO Donostia',
   description: 'ACRO Donostia',
   keywords: ['bolsos', 'donostia', 'moda', 'único', 'ACRO'],

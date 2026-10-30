@@ -44,6 +44,11 @@ type Props = {
   textColor?: string
   /** Foreground content (eyebrow, number, price, buy…). Scrolls over the clip. */
   children?: ReactNode
+  /** Dónde está el bolso en el ancho del frame (0–1), al principio y al final
+      del clip. Los clips están compuestos para escritorio (bolso a la izquierda,
+      texto a la derecha); en un móvil vertical el "cover" centrado dejaba el
+      bolso fuera de pantalla. Solo cuenta cuando el frame se recorta en ancho. */
+  focusX?: [number, number]
 }
 
 /* One cross-fading beat, slid in from its side, timed by scroll progress. */
@@ -100,6 +105,7 @@ export function ScrubBagScene({
   meta,
   textColor = '#241B12',
   children,
+  focusX = [0.5, 0.5],
 }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -134,7 +140,10 @@ export function ScrubBagScene({
     const scale = Math.max((cw * dpr) / iw, (ch * dpr) / ih)
     const dw = iw * scale
     const dh = ih * scale
-    const dx = (cw * dpr - dw) / 2
+    // Encuadre horizontal siguiendo al bolso, sin dejar ver bordes del frame.
+    const t = frameCount > 1 ? frameRef.current / (frameCount - 1) : 0
+    const fx = focusX[0] + (focusX[1] - focusX[0]) * t
+    const dx = Math.min(0, Math.max(cw * dpr - dw, (cw * dpr) / 2 - fx * dw))
     const dy = (ch * dpr - dh) / 2
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(img, dx, dy, dw, dh)
@@ -193,7 +202,9 @@ export function ScrubBagScene({
   // has travelled away), cross-fading one after another over the held clip.
   const beatsStart = 0.28
   const beatSpan = beats.length ? (0.98 - beatsStart) / beats.length : 0
-  const shadow = `0 2px 36px ${bg}, 0 0 14px ${bg}`
+  // El trazo fino de 2 px despega el texto oscuro cuando el clip pasa por zonas
+  // oscuras (el interior del 06 abierto); los halos anchos lo funden con el fondo.
+  const shadow = `0 0 2px ${bg}, 0 0 14px ${bg}, 0 2px 36px ${bg}`
 
   return (
     <section ref={sectionRef} style={{ height, backgroundColor: bg }} className="relative">
@@ -224,7 +235,7 @@ export function ScrubBagScene({
               {isLast && meta && (
                 <span
                   className="block mt-7 font-sans text-[11px] md:text-xs tracking-[0.3em] uppercase"
-                  style={{ color: textColor, opacity: 0.55 }}
+                  style={{ color: textColor, opacity: 0.85 }}
                 >
                   {meta}
                 </span>

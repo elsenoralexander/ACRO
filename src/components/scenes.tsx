@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion'
+import Image from 'next/image'
 
 /* ════════════════════════════════════════════════════════════════
    EditorialScene — the lookbook as an editorial spread. One photo
@@ -40,6 +41,12 @@ function captionPoints(index: number, total: number): Array<[number, number]> {
   return [...fadeIn, [segEnd, 1], [segEnd + seg * 0.1, 0]]
 }
 
+/* Pie del pliego (caption + contador) desplazado por la barra de compra. */
+const LIFT = {
+  transform: 'translateY(calc(var(--buybar-h, 0px) * -1))',
+  transition: 'transform 450ms cubic-bezier(0.16, 1, 0.3, 1)',
+} as const
+
 const CURTAIN_SHUT = 'inset(100% 0 0 0)'
 const CURTAIN_OPEN = 'inset(0% 0 0 0)'
 
@@ -75,8 +82,10 @@ function EditorialFrame({
   return (
     <motion.div style={{ clipPath, zIndex: index }} className="absolute inset-0 overflow-hidden">
       <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        {/* Optimizada: el original de algunas campañas pasaba de 10 MB y el
+            pliego lo servía tal cual. A sangre en un móvil vertical la foto se
+            escala por el alto, de ahí el 140vh. */}
+        <Image src={src} alt="" fill className="object-cover" sizes="(orientation: portrait) 140vh, 100vw" />
       </motion.div>
     </motion.div>
   )
@@ -150,8 +159,9 @@ export function EditorialScene({
             </span>
           )}
 
-          {/* Captions — one per photo, cross-faded on the photo's segment */}
-          <div className="absolute bottom-8 md:bottom-10 left-6 md:left-10 h-4 w-[62vw] max-w-sm">
+          {/* Captions — one per photo, cross-faded on the photo's segment.
+              Suben con la barra de compra del móvil (--buybar-h) para no quedar debajo. */}
+          <div className="absolute bottom-8 md:bottom-10 left-6 md:left-10 h-4 w-[62vw] max-w-sm" style={LIFT}>
             {captions.slice(0, total).map((c, i) => (
               <Caption key={i} progress={scrollYProgress} points={captionPoints(i, total)}>
                 {c}
@@ -160,7 +170,7 @@ export function EditorialScene({
           </div>
 
           {/* Counter + progress hairline */}
-          <div className="absolute bottom-8 md:bottom-10 right-6 md:right-10 flex flex-col items-end gap-3">
+          <div className="absolute bottom-8 md:bottom-10 right-6 md:right-10 flex flex-col items-end gap-3" style={LIFT}>
             <div className="relative h-10 md:h-12 w-24 md:w-28">
               {images.map((_, i) => (
                 <Caption key={i} progress={scrollYProgress} points={captionPoints(i, total)}>
