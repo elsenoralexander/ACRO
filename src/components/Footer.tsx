@@ -9,11 +9,11 @@ export function Footer() {
           <Image
             src="/images/logo-white.png"
             alt="ACRO"
-            width={100}
-            height={50}
-            className="h-10 w-auto object-contain"
+            width={56}
+            height={42}
+            className="h-7 w-auto object-contain"
           />
-          <p className="text-xs text-white/40 leading-relaxed font-sans max-w-xs">
+          <p className="text-xs text-white/60 leading-relaxed font-sans max-w-xs">
             Hecho a mano, uno a uno, en Donostia.
             <br />
             Una pieza. Una vez.
@@ -21,12 +21,11 @@ export function Footer() {
         </div>
 
         <nav className="flex flex-col gap-3">
-          <span className="text-[10px] tracking-[0.4em] uppercase text-white/30 mb-1">Navegar</span>
+          <span className="text-[10px] tracking-[0.4em] uppercase text-white/55 mb-1">Navegar</span>
           {[
             { href: '/', label: 'Inicio' },
             { href: '/coleccion', label: 'Colección' },
             { href: '/carrito', label: 'Carrito' },
-            { href: '/admin', label: 'Admin' },
           ].map((l) => (
             <Link
               key={l.href}
@@ -39,7 +38,7 @@ export function Footer() {
         </nav>
 
         <div className="flex flex-col gap-3">
-          <span className="text-[10px] tracking-[0.4em] uppercase text-white/30 mb-1">Contacto</span>
+          <span className="text-[10px] tracking-[0.4em] uppercase text-white/55 mb-1">Contacto</span>
           <a
             href="mailto:hola@acro.es"
             className="text-xs text-white/60 hover:text-white transition-colors font-sans py-1.5"
@@ -59,10 +58,10 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10 px-6 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-        <p className="text-[10px] text-white/45 tracking-widest font-sans">
+        <p className="text-[10px] text-white/55 tracking-widest font-sans">
           © {new Date().getFullYear()} ACRO · DONOSTIA
         </p>
-        <p className="text-[10px] text-white/45 tracking-widest font-sans uppercase">
+        <p className="text-[10px] text-white/55 tracking-widest font-sans uppercase">
           Cada pieza, única
         </p>
       </div>

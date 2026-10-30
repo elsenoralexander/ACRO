@@ -76,22 +76,22 @@ export function Header() {
       style={{ mixBlendMode: 'normal' }}
     >
       <Link href="/" className="press flex items-center" aria-label="ACRO, inicio">
-        <span className="relative block h-8 w-auto">
+        <span className="relative block h-6 w-auto">
           <Image
             src="/images/logo-black.png"
             alt="ACRO"
-            width={80}
-            height={40}
-            className={`h-8 w-auto object-contain transition-opacity duration-500 ${isDark ? 'opacity-0' : 'opacity-100'}`}
+            width={42}
+            height={32}
+            className={`h-6 w-auto object-contain transition-opacity duration-500 ${isDark ? 'opacity-0' : 'opacity-100'}`}
             priority
           />
           <Image
             src="/images/logo-white.png"
             alt=""
             aria-hidden="true"
-            width={80}
-            height={40}
-            className={`absolute inset-0 h-8 w-auto object-contain transition-opacity duration-500 ${isDark ? 'opacity-100' : 'opacity-0'}`}
+            width={42}
+            height={32}
+            className={`absolute inset-0 h-6 w-auto object-contain transition-opacity duration-500 ${isDark ? 'opacity-100' : 'opacity-0'}`}
             priority
           />
         </span>

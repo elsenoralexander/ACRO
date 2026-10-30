@@ -208,3 +208,159 @@ body {
     transform: none !important;
   }
 }
+
+/* ── Showcase (home): el lienzo infinito ─────────────────────────────
+   Todo lo que se mueve por fotograma lo escribe Showcase.tsx; aquí solo
+   viven los estados (entrada, hover, press, vendida) y la materia. */
+.sc {
+  cursor: grab;
+  touch-action: pinch-zoom; /* el pellizco sigue siendo del usuario; el pan es nuestro */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.sc[data-dragging] {
+  cursor: grabbing;
+}
+/* Mientras se arrastra, las piezas que pasan bajo el dedo no reaccionan. */
+.sc[data-dragging] .sc-item {
+  pointer-events: none;
+}
+
+/* La mesa de corte: rejilla fina que viaja con la cámara. */
+.sc-grid {
+  background-image: linear-gradient(rgb(10 10 10 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(10 10 10 / 0.05) 1px, transparent 1px);
+}
+
+.sc-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+.sc-item:focus-visible {
+  outline: none;
+}
+.sc-item:focus-visible .sc-lift {
+  outline: 1.5px solid #0a0a0a;
+  outline-offset: 10px;
+}
+
+.sc-lift {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* `backwards`: aplica el estado inicial durante el retraso y luego suelta
+     el transform, para que el hover pueda usarlo. */
+  animation: sc-in 900ms cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms) backwards;
+}
+@keyframes sc-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+}
+
+/* Sombra de contacto del recorte: se abre y aclara cuando el bolso se levanta. */
+.sc-shadow {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: -2%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(10 10 10 / 0.26), transparent);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Foto de campaña: una copia apoyada en la mesa. */
+.sc-photo {
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(10 10 10 / 0.08), 0 16px 30px -20px rgb(10 10 10 / 0.4);
+}
+
+.sc-micro {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(10 10 10 / 0.62);
+}
+.sc-label {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 10px);
+  min-width: 100%;
+  white-space: nowrap;
+  transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sc-label--bag {
+  left: 50%;
+  min-width: 0;
+  width: max(100%, 13rem);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sc-item:hover .sc-lift {
+    transform: translateY(-8px) scale(1.035);
+  }
+  .sc-item:hover .sc-shadow {
+    transform: translateY(8px) scale(1.15);
+    opacity: 0.6;
+  }
+  .sc-item:hover .sc-micro {
+    color: #0a0a0a;
+  }
+}
+.sc-item:active .sc-lift {
+  transform: scale(0.97);
+  transition-duration: 160ms;
+}
+
+/* Vendida: la pieza se queda en la mesa, apagada, con su sello. */
+.sc-sold .sc-media {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+.sc-sold .sc-shadow {
+  opacity: 0.4;
+}
+.sc-stamp {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  background: #f5f5f0;
+  color: #0a0a0a;
+  white-space: nowrap;
+}
+
+.sc-fade {
+  height: 250px;
+  background: linear-gradient(to top, #f5f5f0 0%, #f5f5f0 36%, rgb(245 245 240 / 0.78) 62%, rgb(245 245 240 / 0));
+}
+@media (min-width: 768px) {
+  .sc-fade {
+    height: 200px;
+  }
+}
+.sc-fade--top {
+  height: 120px;
+  background: linear-gradient(to bottom, #f5f5f0 0%, rgb(245 245 240 / 0.8) 40%, rgb(245 245 240 / 0));
+}
+@media (min-width: 768px) {
+  .sc-fade--top {
+    height: 130px;
+  }
+}
+.sc-hint {
+  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -27,7 +27,7 @@ export default function SuccessPage() {
       className="min-h-screen bg-ink text-chalk flex flex-col items-center justify-center px-6 text-center"
     >
       <motion.div {...rise(0.1)}>
-        <Image src="/images/logo-white.png" alt="ACRO" width={100} height={50} className="h-12 w-auto object-contain mb-16" />
+        <Image src="/images/logo-white.png" alt="ACRO" width={64} height={48} className="h-8 w-auto object-contain mb-16" />
       </motion.div>
 
       <motion.div {...rise(0.25)} className="unique-stamp border-chalk text-chalk mb-10">

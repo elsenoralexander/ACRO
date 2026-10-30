@@ -50,7 +50,7 @@ export const products: Product[] = [
       main: '/images/product-01.png',
       views: ['/images/product-01.png'],
     },
-    cutout: '/spin/cutout-01.png',
+    cutout: '/cutouts/01.png',
     shooting: [
       '/images/shoot-01-1.jpg',
       '/images/shoot-01-2.jpg',
@@ -106,7 +106,7 @@ export const products: Product[] = [
       main: '/images/product-02.png',
       views: ['/images/product-02.png'],
     },
-    cutout: '/spin/cutout-02.png',
+    cutout: '/cutouts/02.png',
     shooting: [
       '/images/shoot-02-1.jpg',
       '/images/shoot-02-2.jpg',
@@ -171,7 +171,7 @@ export const products: Product[] = [
       dark: '/images/product-03-dark.png',
       views: ['/images/product-03-white.png'],
     },
-    cutout: '/spin/cutout-03.png',
+    cutout: '/cutouts/03.png',
     shooting: [
       '/images/shoot-03-1.jpg',
       '/images/shoot-03-2.jpg',
@@ -237,7 +237,7 @@ export const products: Product[] = [
         '/images/product-04-detail-2.jpg',
       ],
     },
-    cutout: '/spin/pop-cutout.png',
+    cutout: '/cutouts/04.png',
     shooting: [
       '/images/shoot-04-1.jpg',
       '/images/shoot-04-2.jpg',
@@ -306,7 +306,7 @@ export const products: Product[] = [
         '/images/product-05-detail-2.jpg',
       ],
     },
-    cutout: '/spin/cutout-05.png',
+    cutout: '/cutouts/05.png',
     shooting: [
       '/images/shoot-05-1.jpg',
       '/images/shoot-05-2.jpg',
@@ -377,6 +377,7 @@ export const products: Product[] = [
       main: '/images/product-06.jpg',
       views: ['/images/product-06.jpg', '/images/product-06-detail-1.jpg'],
     },
+    cutout: '/cutouts/06.png',
     shooting: [
       '/images/shoot-06-1.jpg',
       '/images/shoot-06-2.jpg',
