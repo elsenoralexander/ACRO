@@ -15,11 +15,17 @@ export type Product = {
     frames: number
     /** Colour for the narrative beats over the clip. */
     beatColor: string
+    /** Posición horizontal del bolso en el frame (0–1) al empezar y al acabar
+        el clip: encuadra el móvil vertical. Ver ScrubBagScene. */
+    focusX?: [number, number]
   }
   shooting: string[]
   /** Pliego editorial curado (EditorialScene). Va a sangre y de una en una,
       así que excluye a propósito los fotomontajes: solo leen a tamaño rejilla. */
   lookbook?: Array<{ src: string; caption: string }>
+  /** «De cerca»: el punto, el forro, los herrajes. Detalles reales recortados
+      de las fotos de producto (public/details) o fotos de detalle propias. */
+  closeups?: Array<{ src: string; caption: string }>
   copy: {
     es: {
       tagline: string
@@ -61,6 +67,11 @@ export const products: Product[] = [
     lookbook: [
       { src: '/images/shoot-01-4.jpg', caption: 'Frente al mar' },
       { src: '/images/shoot-01-5.jpg', caption: 'El callejón' },
+    ],
+    closeups: [
+      { src: '/details/01-piedras.jpg', caption: 'Las piedras' },
+      { src: '/details/01-detras.jpg', caption: 'Por detrás' },
+      { src: '/details/01-perfil.jpg', caption: 'De perfil' },
     ],
     copy: {
       es: {
@@ -121,6 +132,11 @@ export const products: Product[] = [
       { src: '/images/shoot-02-4.jpg', caption: 'La espera' },
       { src: '/images/shoot-02-5.jpg', caption: 'Se abre' },
       { src: '/images/shoot-02-6.jpg', caption: 'Naranja quemado' },
+    ],
+    closeups: [
+      { src: '/details/02-placa.jpg', caption: 'La placa' },
+      { src: '/details/02-dentro.jpg', caption: 'Por dentro · 1/1' },
+      { src: '/details/02-llavero.jpg', caption: 'El llavero' },
     ],
     copy: {
       es: {
@@ -186,6 +202,10 @@ export const products: Product[] = [
       { src: '/images/shoot-03-4.jpg', caption: 'Sin excusas' },
       { src: '/images/shoot-03-5.jpg', caption: 'Cara a cara' },
       { src: '/images/shoot-03-6.jpg', caption: 'Última copa' },
+    ],
+    closeups: [
+      { src: '/details/03-punto.jpg', caption: 'El punto' },
+      { src: '/details/03-nudo.jpg', caption: 'El nudo' },
     ],
     copy: {
       es: {
@@ -256,6 +276,10 @@ export const products: Product[] = [
       { src: '/images/shoot-04-6.jpg', caption: 'El café' },
       { src: '/images/shoot-04-7.jpg', caption: 'Hora dorada' },
     ],
+    closeups: [
+      { src: '/images/product-04-detail-1.jpg', caption: 'La placa' },
+      { src: '/images/product-04-detail-2.jpg', caption: 'Las cuentas' },
+    ],
     copy: {
       es: {
         tagline: 'Cacao tejido. Cuentas de oro. Hora dorada.',
@@ -324,6 +348,10 @@ export const products: Product[] = [
       { src: '/images/shoot-05-6.jpg', caption: 'Sobre la piedra' },
       { src: '/images/shoot-05-7.jpg', caption: 'Campo abierto' },
     ],
+    closeups: [
+      { src: '/details/05-margaritas.jpg', caption: 'Las margaritas' },
+      { src: '/images/product-05-detail-2.jpg', caption: 'El forro de lino' },
+    ],
     copy: {
       es: {
         tagline: 'Margaritas tejidas. Lino crudo. Campo abierto.',
@@ -362,6 +390,7 @@ export const products: Product[] = [
       path: '/scrub/05',
       frames: 90,
       beatColor: '#5A4632',
+      focusX: [0.24, 0.5],
     },
     theme: {
       bg: '#EFEADD',
@@ -394,6 +423,10 @@ export const products: Product[] = [
       { src: '/images/shoot-06-5.jpg', caption: 'Última luz' },
       { src: '/images/shoot-06-6.jpg', caption: 'Cara a cara' },
       { src: '/images/shoot-06-7.jpg', caption: 'El campamento' },
+    ],
+    closeups: [
+      { src: '/details/06-placa.jpg', caption: 'La placa' },
+      { src: '/details/06-flecos.jpg', caption: 'Los flecos' },
     ],
     copy: {
       es: {
@@ -433,6 +466,7 @@ export const products: Product[] = [
       path: '/scrub/06',
       frames: 90,
       beatColor: '#4F4733',
+      focusX: [0.23, 0.27],
     },
     theme: {
       bg: '#E3DAC2',
