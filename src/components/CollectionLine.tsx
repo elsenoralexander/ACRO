@@ -23,6 +23,7 @@ import {
   type Assets,
   type Strand,
 } from './openings'
+import { makePacing, panAt, type Pacing } from './pacing'
 
 /* /coleccion — la fila.
    Antes era una rejilla de tarjetas sueltas: cada pieza en su caja, sin nada
@@ -51,7 +52,8 @@ import {
    Sticky + pista con transform, como el resto de escenas de la web: con el
    `template.tsx` transformado, `position: fixed` no sirve. Lo que va con el
    scroll lo escribe `render(p)` a mano; con movimiento reducido, la fila se
-   apila en vertical y no hay paneo. */
+   apila en vertical y no hay paneo. En móvil cada bolso frena en el centro
+   mientras se abre su mundo (pacing.ts): a 1:1 un gesto se comía la apertura. */
 
 const INK = '#0A0A0A'
 const CHALK = '#F5F5F0'
@@ -61,8 +63,8 @@ const N = products.length
     acorazada (02), el bokeh (03), las cuentas (POP), la hora dorada (05),
     los flecos (06) y el nudo (cierre). */
 type Opening = 'tide' | 'vault' | 'bokeh' | 'pop' | 'stems' | 'fringe' | 'iris'
-/** Cada apertura empieza con su ancla al `from` del ancho y dura `span` anchos.
-    Las ventanas no se pisan (cada una empieza cuando acaba la anterior, con
+/** En escritorio, cada apertura empieza con su ancla al `from` del ancho y
+    dura `span` anchos (en móvil manda pacing.ts). Las ventanas no se pisan (cada una empieza cuando acaba la anterior, con
     las salas a 40 anchos), y el cierre, que está solo media sala después del
     06, tiene que acabar antes del final del recorrido. */
 const WINDOW: Record<Opening, [number, number]> = {
@@ -196,6 +198,9 @@ export function CollectionLine() {
   const anchors = useRef<number[]>([])
   const lightFor = useRef(-1)
   const intro = useRef(0)
+  // En móvil, el ritmo de la fila: cuánto scroll tiene y dónde se para.
+  const pacing = useRef<Pacing | null>(null)
+  const [runway, setRunway] = useState<number | null>(null)
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] })
 
@@ -206,7 +211,9 @@ export function CollectionLine() {
     const vw = window.innerWidth
     const trackW = track.offsetWidth
     const panMax = Math.max(0, trackW - vw)
-    const pan = p * panMax
+    const pace = pacing.current
+    const y = p * (pace?.runway ?? 0)
+    const pan = pace ? Math.min(panMax, panAt(pace, y)) : p * panMax
     track.style.transform = `translate3d(${-pan}px, 0, 0)`
 
     // Cada sala, según lo lejos que esté del centro: el bolso que se va se
@@ -222,14 +229,15 @@ export function CollectionLine() {
     })
     // ── El paso de un mundo a otro ──────────────────────────────────
     // Cada mundo j se abre mientras su ancla viaja por su ventana (la cámara
-    // acorazada, del 80 % al 48 % del ancho; en móvil, un poco más larga):
-    // llega al centro con su mundo ya entero.
-    const mobile = vw < 768
+    // acorazada, del 80 % al 48 % del ancho) y llega al centro con su mundo
+    // ya entero. En móvil, mientras su bolso está parado en el centro.
     const vh = stage.offsetHeight
-    const open = anchors.current.map((x, j) => {
-      const [from, span] = WINDOW[WORLDS[j + 1]?.opening ?? 'vault']
-      return clamp01((from * vw - (x - pan)) / ((span + (mobile ? 0.06 : 0)) * vw))
-    })
+    const open = pace
+      ? pace.opens.map(([a, b]) => clamp01((y - a) / (b - a)))
+      : anchors.current.map((x, j) => {
+          const [from, span] = WINDOW[WORLDS[j + 1]?.opening ?? 'vault']
+          return clamp01((from * vw - (x - pan)) / (span * vw))
+        })
     let cur = 0
     open.forEach((t, j) => {
       if (t >= 1) cur = j + 1
@@ -530,9 +538,13 @@ export function CollectionLine() {
     layout.current = { introW, roomW }
     knotAt.current = { x: kx, y: ky }
 
+    // En móvil, cada ancla tiene su parada con el bolso en el centro.
+    const vw = window.innerWidth
+    pacing.current = vw < 768 ? makePacing(anchors.current.map((x) => x - vw / 2), Math.max(0, w - vw), h) : null
+    setRunway(pacing.current?.runway ?? null)
+
     // El telón del 06 (sus flecos, en el oliva del bolso) y los lienzos, a la
     // medida de la ventana.
-    const vw = window.innerWidth
     strands.current = makeStrands(vw, (u) => mixHex('#363C26', '#5A6141', u))
     const dpr = Math.min(2, window.devicePixelRatio || 1)
     ;[underRef.current, overRef.current].forEach((canvas) => {
@@ -597,7 +609,9 @@ export function CollectionLine() {
     if (still || !section || !track) return
     const vw = window.innerWidth
     const range = Math.max(1, track.offsetWidth - vw)
-    const p = clamp01((centers.current[i] - vw / 2) / range)
+    // En móvil, al final de su parada: el bolso en el centro y su mundo abierto.
+    const pace = pacing.current
+    const p = pace ? pace.opens[i][1] / pace.runway : clamp01((centers.current[i] - vw / 2) / range)
     const top = section.getBoundingClientRect().top + window.scrollY
     window.scrollTo({ top: top + p * (section.offsetHeight - window.innerHeight), behavior: 'instant' })
   }
@@ -674,7 +688,12 @@ export function CollectionLine() {
     <section
       ref={sectionRef}
       className="lineup relative bg-chalk"
-      style={{ height: `calc(100svh + (var(--intro) + ${N} * var(--room) + var(--outro) - 100) * 1vw)` }}
+      style={{
+        height:
+          runway === null
+            ? `calc(100svh + (var(--intro) + ${N} * var(--room) + var(--outro) - 100) * 1vw)`
+            : `calc(100svh + ${Math.round(runway)}px)`,
+      }}
     >
       <div ref={stageRef} data-tone="light" className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Los mundos: el abierto y el que se está abriendo. */}
