@@ -52,7 +52,7 @@ export default function ProductPage() {
   // Portada con escena: clip scrubbeado (05, 06) o motion graphics sobre el
   // recorte (01–04). En las dos, los beats del tagline cruzan por encima.
   const scrub = product.scrub
-  const stage = product.cutout ? product.stage : undefined
+  const stage = product.cutout && product.cutoutSize ? product.stage : undefined
   const showcaseBeats = scrub || stage ? copy.es.tagline.split('.').map((s) => s.trim().toUpperCase()).filter(Boolean) : []
 
   const handleAdd = () => {
@@ -189,11 +189,11 @@ export default function ProductPage() {
         >
           {heroPanel(false)}
         </ScrubBagScene>
-      ) : stage && product.cutout ? (
+      ) : stage && product.cutout && product.cutoutSize ? (
         <MotionBagScene
           act={stage.act}
           cutout={product.cutout}
-          size={stage.size}
+          size={product.cutoutSize}
           alt={`Bolso ACRO ${number} — ${name}`}
           number={number}
           bg={bgColor}

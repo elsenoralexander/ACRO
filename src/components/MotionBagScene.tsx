@@ -60,6 +60,58 @@ const BEADS: Array<[number, number]> = [
   [0.633, 0.233], [0.667, 0.289], [0.771, 0.47], [0.838, 0.578], [0.941, 0.682], [0.947, 0.79], [0.932, 0.881],
 ]
 const PLATE: [number, number] = [0.49, 0.77]
+
+/** Partícula que sale del bolso al espacio: una piedra del 01, una bola del
+    POP. Recortes reales (public/motion), del mismo bolso. */
+type Particle = {
+  src: string
+  /** Tamaño sobre el bolso, en fracción del ancho del recorte. */
+  size: number
+  /** Dónde está en el bolso (fracción de la caja del recorte). */
+  from: [number, number]
+  /** Adónde vuela: un punto fijo, o un punto del hilo [tramo, avance 0–1]. */
+  to?: [number, number]
+  on?: [string, number]
+  /** Cuánto se acerca a cámara (escala máxima). */
+  depth: number
+  /** Desenfoque en pantalla: las más cercanas, fuera de foco. */
+  blur?: number
+  /** Por delante del bolso o por detrás. */
+  front?: boolean
+}
+
+const stone = (n: number) => `/motion/01-piedra-${n}.png`
+/** 01: las piedras salen del bolso, el hilo las enhebra al pasar y, cuando se
+    va, cada una vuelve a su sitio. Las de los tramos de detrás van detrás. */
+const STONES: Particle[] = [
+  { src: stone(1), size: 0.046, from: [0.409, 0.642], on: ['th1', 0.3], depth: 2.4 },
+  { src: stone(2), size: 0.046, from: [0.263, 0.647], on: ['th1', 0.62], depth: 1.9 },
+  { src: stone(4), size: 0.046, from: [0.207, 0.676], on: ['th1', 0.88], depth: 2.8 },
+  { src: stone(3), size: 0.046, from: [0.37, 0.675], on: ['th2', 0.3], depth: 3, front: true },
+  { src: stone(5), size: 0.046, from: [0.612, 0.72], on: ['th2', 0.72], depth: 2.6, front: true },
+  { src: stone(6), size: 0.046, from: [0.578, 0.761], on: ['th3', 0.1], depth: 1.8 },
+  { src: stone(10), size: 0.046, from: [0.787, 0.957], on: ['th3', 0.36], depth: 1.6 },
+  { src: stone(9), size: 0.046, from: [0.526, 0.905], on: ['th3', 0.62], depth: 2.2 },
+  // Fuera de foco, delante de todo: madera clara, no negras (en negro y
+  // desenfocadas leían como manchas).
+  { src: stone(7), size: 0.046, from: [0.709, 0.842], to: [-0.75, 0.2], depth: 4.4, blur: 3.5, front: true },
+  { src: stone(8), size: 0.046, from: [0.333, 0.848], to: [1.55, 1.0], depth: 5, blur: 4.5, front: true },
+]
+
+const ball = (n: number) => `/motion/04-cuenta-${(n % 3) + 1}.png`
+/** POP: cada cuenta que recorre la luz suelta una bola de oro al espacio, que
+    luego sube despacio con la hora dorada. `k` es su cuenta en BEADS. */
+const BALLS: Array<Particle & { k: number }> = [
+  { k: 1, src: ball(0), size: 0.032, from: BEADS[1], to: [-0.6, 0.66], depth: 3.4, front: true },
+  { k: 3, src: ball(1), size: 0.032, from: BEADS[3], to: [-0.42, 0.18], depth: 2.2 },
+  { k: 4, src: ball(2), size: 0.032, from: BEADS[4], to: [-0.95, 0.92], depth: 8, blur: 7, front: true },
+  { k: 5, src: ball(0), size: 0.032, from: BEADS[5], to: [0.02, 0.02], depth: 2.6 },
+  { k: 7, src: ball(1), size: 0.032, from: BEADS[7], to: [0.86, -0.02], depth: 2 },
+  { k: 9, src: ball(2), size: 0.032, from: BEADS[9], to: [1.4, 0.24], depth: 4, front: true },
+  { k: 10, src: ball(0), size: 0.032, from: BEADS[10], to: [1.95, 0.08], depth: 7, blur: 6, front: true },
+  { k: 11, src: ball(1), size: 0.032, from: BEADS[11], to: [1.62, 0.66], depth: 2.4 },
+  { k: 13, src: ball(2), size: 0.032, from: BEADS[13], to: [1.2, 1.02], depth: 3, front: true },
+]
 const STRIPS = 8
 /** Puntos del scroll que disparan el destello: entra la primera frase, entra la última. */
 const GLINTS = [0.32, 0.8]
@@ -143,6 +195,10 @@ export function MotionBagScene({
   const stillRef = useRef(false)
   // Reparto del hilo entre sus tres tramos, proporcional a lo que mide cada uno.
   const threadShares = useRef([0.3, 0.2, 0.5])
+  // Puntos del hilo donde se ensartan las piedras, y la caja del recorte en px.
+  const homes = useRef<Record<number, [number, number]>>({})
+  const box = useRef({ w: 0, h: 0 })
+  const particles: Particle[] = act === 'hilo' ? STONES : act === 'dorada' ? BALLS : []
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] })
 
@@ -272,6 +328,57 @@ export function MotionBagScene({
       contact = 1 - 0.45 * gold
     }
 
+    // Partículas: salen del bolso en arco (camino curvo = gesto amable) y se
+    // acercan a cámara. Se dibujan a su tamaño máximo y se escalan hacia abajo:
+    // un recorte pequeño escalado hacia arriba se ve borroso.
+    const { w, h } = box.current
+    const head = ease(seg(p, 0.44, 0.7))
+    const tail = ease(seg(p, 0.76, 0.97))
+    const [s1, s2] = threadShares.current
+    const starts: Record<string, [number, number]> = { th1: [0, s1], th2: [s1, s2], th3: [s1 + s2, 1 - s1 - s2] }
+    particles.forEach((pt, i) => {
+      const node = n[`pt${i}`]
+      if (!node || !w) return
+      let out = 0
+      let lift = 0
+      let rise = 0
+      let nudge = 0
+      if (act === 'hilo') {
+        // Su sitio en el hilo, en avance global: ahí la alcanza la cabeza y de
+        // ahí la suelta la cola.
+        const tg = pt.on ? starts[pt.on[0]][0] + starts[pt.on[0]][1] * pt.on[1] : 0.5
+        lift = ease(seg(p, 0.29 + i * 0.011, 0.4 + i * 0.011))
+        out = lift * (1 - ease(seg(tail, tg - 0.02, tg + 0.12)))
+        nudge = pt.on ? Math.sin(Math.PI * seg(head, tg - 0.01, tg + 0.07)) : 0
+      } else {
+        const k = (pt as Particle & { k: number }).k
+        // Justo cuando su cuenta acaba de brillar: la luz la suelta.
+        const at = 0.487 + k * 0.0125
+        lift = ease(seg(p, at, at + 0.075))
+        out = lift
+        rise = seg(p, 0.6, 1)
+      }
+      if (still) out = 0
+      const to = pt.on ? homes.current[i] ?? pt.from : pt.to ?? pt.from
+      const [fx, fy] = pt.from
+      // Arco: el punto de control sube por encima de los dos extremos.
+      const cx = (fx + to[0]) / 2
+      const cy = Math.min(fy, to[1]) - 0.18
+      const u = out
+      let px = (1 - u) * (1 - u) * fx + 2 * (1 - u) * u * cx + u * u * to[0]
+      let py = (1 - u) * (1 - u) * fy + 2 * (1 - u) * u * cy + u * u * to[1]
+      // Vida en el aire: flotan, y en el POP suben con la hora dorada.
+      py += Math.sin(p * 40 + i * 2.1) * 0.006 * out - rise * 0.1 * Math.min(pt.depth, 4) / 2 * out
+      px += Math.sin(p * 14 + i) * 0.02 * rise * out
+      const el = pt.size * pt.depth * w
+      const scale = mix(1 / pt.depth, 1, out)
+      const turn = (i % 2 ? 1 : -1) * 24 * out + nudge * 18
+      put(node, {
+        opacity: out > 0.002 ? '1' : '0',
+        transform: `translate3d(${px * w - el / 2}px, ${py * h - el / 2}px, 0) scale(${scale}) rotate(${turn}deg)`,
+      })
+    })
+
     put(n.light, { opacity: String(light) })
     put(n.contact, { opacity: String(contact) })
     put(n.reflection, { opacity: String(reflection) })
@@ -285,20 +392,35 @@ export function MotionBagScene({
     const sync = () => {
       mobileRef.current = mobile.matches
       stillRef.current = reduced.matches
+      const whole = nodes.current.whole as HTMLElement | null
+      if (whole) box.current = { w: whole.offsetWidth, h: whole.offsetHeight }
       render(scrollYProgress.get())
     }
     if (act === 'hilo') {
       const lengths = ['th1', 'th2', 'th3'].map((k) => (nodes.current[k] as SVGPathElement | null)?.getTotalLength() ?? 0)
       const total = lengths.reduce((a, b) => a + b, 0)
       if (total > 0) threadShares.current = lengths.map((l) => l / total)
+      // Cada piedra ensartada vive en un punto exacto del hilo.
+      particles.forEach((pt, i) => {
+        const path = pt.on && (nodes.current[pt.on[0]] as SVGPathElement | null)
+        if (!path || !pt.on) return
+        const pt2 = path.getPointAtLength(path.getTotalLength() * pt.on[1])
+        homes.current[i] = [pt2.x / 100, pt2.y / H]
+      })
     }
     sync()
+    // La caja del recorte cambia con la ventana (y al cargar la imagen).
+    window.addEventListener('resize', sync)
+    const img = nodes.current.whole as HTMLImageElement | null
+    img?.addEventListener('load', sync)
     // Y uno al posarse el bolso tras la entrada.
     const landed = window.setTimeout(glint, 1250)
     mobile.addEventListener('change', sync)
     reduced.addEventListener('change', sync)
     return () => {
       window.clearTimeout(landed)
+      window.removeEventListener('resize', sync)
+      img?.removeEventListener('load', sync)
       mobile.removeEventListener('change', sync)
       reduced.removeEventListener('change', sync)
     }
@@ -310,6 +432,25 @@ export function MotionBagScene({
   const beatSpan = beats.length ? (0.98 - beatsStart) / beats.length : 0
   const keyLight = dark ? rgba(accent, 0.2) : 'rgba(255, 255, 255, 0.62)'
   const shade = dark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(60, 40, 20, 0.13)'
+
+  const particle = (pt: Particle, i: number) => (
+    <img
+      key={i}
+      ref={bind(`pt${i}`)}
+      src={pt.src}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      className="pointer-events-none absolute left-0 top-0 h-auto max-w-none select-none"
+      style={{
+        width: `${pt.size * pt.depth * 100}%`,
+        opacity: 0,
+        transformOrigin: '50% 50%',
+        // El desenfoque se pinta antes de escalar: a escala máxima, el que pide.
+        filter: pt.blur ? `blur(${pt.blur}px)` : undefined,
+      }}
+    />
+  )
 
   const copy = (cls = '') => (
     <img src={src} alt="" aria-hidden="true" draggable={false} className={`absolute inset-0 h-full w-full select-none ${cls}`} />
@@ -414,6 +555,7 @@ export function MotionBagScene({
                     {threadPath('th3', 'M 99 124 C 136 96, 124 50, 64 50 C 14 50, 0 20, 40 2 C 84 -18, 190 -6, 280 -80')}
                   </svg>
                 )}
+                {particles.map((pt, i) => (pt.front ? null : particle(pt, i)))}
                 {/* La imagen real (y la única que lee un lector de pantalla). */}
                 <img
                   ref={bind('whole')}
@@ -503,6 +645,8 @@ export function MotionBagScene({
                       </span>
                     </span>
                   ))}
+
+                {particles.map((pt, i) => (pt.front ? particle(pt, i) : null))}
               </div>
             </div>
           </div>

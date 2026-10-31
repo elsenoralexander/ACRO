@@ -1,5 +1,5 @@
 import { Footer } from '@/components/Footer'
-import { CollectionGrid } from '@/components/CollectionGrid'
+import { CollectionLine } from '@/components/CollectionLine'
 
 export const metadata = {
   title: 'Colección — ACRO',
@@ -10,7 +10,7 @@ export const metadata = {
 export default function ColeccionPage() {
   return (
     <>
-      <CollectionGrid />
+      <CollectionLine />
       <Footer />
     </>
   )

@@ -240,6 +240,13 @@ body {
 .mg-cascade > :nth-child(5) { animation-delay: 0.6s; }
 .mg-cascade > :nth-child(n + 6) { animation-delay: 0.67s; }
 
+/* ── /coleccion: la fila (CollectionLine) ────────────────────────────
+   Anchos en vw sin unidad para poder multiplicarlos en calc(). */
+.lineup { --intro: 100; --room: 84; --outro: 92; }
+@media (min-width: 768px) {
+  .lineup { --intro: 62; --room: 40; --outro: 56; }
+}
+
 /* ── Showcase (home): el lienzo infinito ─────────────────────────────
    Todo lo que se mueve por fotograma lo escribe Showcase.tsx; aquí solo
    viven los estados (entrada, hover, press, vendida) y la materia. */

@@ -11,6 +11,8 @@ export type Product = {
     views: string[]
   }
   cutout?: string // high-def transparent PNG for the motion-graphics scene
+  /** Tamaño del recorte en píxeles: reserva su caja antes de que cargue. */
+  cutoutSize?: [number, number]
   /** Scroll-scrubbed hero clip (frames in public/scrub/<id>). Presence = showcase PDP. */
   scrub?: {
     path: string // e.g. '/scrub/06'
@@ -25,8 +27,6 @@ export type Product = {
       plató, con un gesto propio por bolso. Ver MotionBagScene. */
   stage?: {
     act: StageAct
-    /** Tamaño del recorte en píxeles: reserva su caja antes de que cargue. */
-    size: [number, number]
     beatColor: string
   }
   shooting: string[]
@@ -67,7 +67,8 @@ export const products: Product[] = [
       views: ['/images/product-01.png'],
     },
     cutout: '/cutouts/01.png',
-    stage: { act: 'hilo', size: [798, 1370], beatColor: '#4A3A24' },
+    cutoutSize: [798, 1370],
+    stage: { act: 'hilo', beatColor: '#4A3A24' },
     shooting: [
       '/images/shoot-01-1.jpg',
       '/images/shoot-01-2.jpg',
@@ -129,7 +130,8 @@ export const products: Product[] = [
       views: ['/images/product-02.png'],
     },
     cutout: '/cutouts/02.png',
-    stage: { act: 'apertura', size: [1045, 1364], beatColor: '#D4D6DA' },
+    cutoutSize: [1045, 1364],
+    stage: { act: 'apertura', beatColor: '#D4D6DA' },
     shooting: [
       '/images/shoot-02-1.jpg',
       '/images/shoot-02-2.jpg',
@@ -200,7 +202,8 @@ export const products: Product[] = [
       views: ['/images/product-03-white.png'],
     },
     cutout: '/cutouts/03.png',
-    stage: { act: 'noche', size: [986, 1600], beatColor: '#C9D2E0' },
+    cutoutSize: [986, 1600],
+    stage: { act: 'noche', beatColor: '#C9D2E0' },
     shooting: [
       '/images/shoot-03-1.jpg',
       '/images/shoot-03-2.jpg',
@@ -271,7 +274,8 @@ export const products: Product[] = [
       ],
     },
     cutout: '/cutouts/04.png',
-    stage: { act: 'dorada', size: [913, 1600], beatColor: '#5A3E26' },
+    cutoutSize: [913, 1600],
+    stage: { act: 'dorada', beatColor: '#5A3E26' },
     shooting: [
       '/images/shoot-04-1.jpg',
       '/images/shoot-04-2.jpg',
@@ -345,6 +349,7 @@ export const products: Product[] = [
       ],
     },
     cutout: '/cutouts/05.png',
+    cutoutSize: [781, 1600],
     shooting: [
       '/images/shoot-05-1.jpg',
       '/images/shoot-05-2.jpg',
@@ -421,6 +426,7 @@ export const products: Product[] = [
       views: ['/images/product-06.jpg', '/images/product-06-detail-1.jpg'],
     },
     cutout: '/cutouts/06.png',
+    cutoutSize: [1640, 1271],
     shooting: [
       '/images/shoot-06-1.jpg',
       '/images/shoot-06-2.jpg',
