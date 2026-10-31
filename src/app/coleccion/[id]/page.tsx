@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import { Footer } from '@/components/Footer'
 import { BuyBar } from '@/components/BuyBar'
 import { ScrubBagScene } from '@/components/ScrubBagScene'
+import { MotionBagScene } from '@/components/MotionBagScene'
 import { EditorialScene } from '@/components/scenes'
 import { Reveal, Parallax, Words } from '@/components/motion'
 import { getProduct } from '@/lib/products'
@@ -48,10 +49,11 @@ export default function ProductPage() {
   const sku = `#${/^\d+$/.test(number) ? 'P' + number : number}-001`
   const heroImage = product.cutout ?? (isDark && product.images.dark ? product.images.dark : product.images.main)
   const name = copy.es.tagline.split('.')[0]
-  // Los productos con clip scrubbeado (05, 06…) usan el hero showcase: los beats
-  // del tagline aparecen ENCIMA del clip mientras se transforma.
+  // Portada con escena: clip scrubbeado (05, 06) o motion graphics sobre el
+  // recorte (01–04). En las dos, los beats del tagline cruzan por encima.
   const scrub = product.scrub
-  const showcaseBeats = scrub ? copy.es.tagline.split('.').map((s) => s.trim().toUpperCase()).filter(Boolean) : []
+  const stage = product.cutout ? product.stage : undefined
+  const showcaseBeats = scrub || stage ? copy.es.tagline.split('.').map((s) => s.trim().toUpperCase()).filter(Boolean) : []
 
   const handleAdd = () => {
     addItem(product)
@@ -111,11 +113,66 @@ export default function ProductPage() {
     </Link>
   )
 
+  // Panel de info/compra de las portadas con escena: ocupa la primera pantalla
+  // y SCROLLEA sobre el fondo fijo; el velo viaja con el texto para mantener la
+  // legibilidad. En las de motion graphics (`staged`) entra en cascada con el
+  // bolso, y el velo móvil es más bajo: allí el bolso no va detrás del texto,
+  // va encima, y el velo de los clips le tapaba el cuerpo.
+  const heroPanel = (staged: boolean) => (
+    <div
+      data-tone={isDark ? 'dark' : 'light'}
+      className="relative min-h-[100svh] flex flex-col justify-end md:justify-center md:items-end px-7 md:px-16 pb-12 md:pb-0"
+    >
+      {/* Velo con el bg del tema — móvil desde abajo, desktop desde la derecha.
+         En móvil el bolso queda centrado detrás del texto (ver focusX), así
+         que el velo tapa hasta la altura del sello; viaja con el panel y el
+         bolso se descubre entero al bajar. */}
+      <div
+        className="pointer-events-none absolute inset-0 md:hidden"
+        style={{
+          background: staged
+            ? `linear-gradient(to top, ${bgColor}F2, ${bgColor}CC 32%, transparent 54%)`
+            : `linear-gradient(to top, ${bgColor}F7, ${bgColor}E0 38%, ${bgColor}8C 56%, transparent 74%)`,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 hidden md:block"
+        style={{ background: `linear-gradient(to left, ${bgColor}D9, ${bgColor}0D 55%, transparent)` }}
+      />
+      <div className={`relative flex flex-col w-full max-w-sm md:items-end md:text-right ${staged ? 'mg-cascade' : ''}`}>
+        <div className="unique-stamp inline-block self-start md:self-end mb-6" style={{ color: txtColor, borderColor: txtColor, opacity: sold ? 0.85 : 0.65 }}>
+          {stampLabel}
+        </div>
+        <h1 className="font-bebas text-7xl md:text-8xl leading-none" style={{ color: txtColor }}>
+          <span className="sr-only">ACRO </span>
+          {number}
+        </h1>
+        <p className="font-sans text-sm leading-relaxed mt-3 max-w-sm" style={{ color: txtColor, opacity: 0.75 }}>{copy.es.tagline}</p>
+        <p lang="en" className="font-sans text-xs leading-relaxed mt-1 max-w-sm italic" style={{ color: txtColor, opacity: 0.6 }}>{copy.en.tagline}</p>
+        <div className="mt-5 md:mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:flex-row-reverse">
+          <span className="font-bebas text-5xl" style={{ color: txtColor }}>{price}€</span>
+          <span className="font-sans text-xs" style={{ color: txtColor, opacity: 0.6 }}>{shippingNote}</span>
+        </div>
+        <div ref={heroCtaRef} className="mt-5 md:mt-6 w-full max-w-xs md:self-end">
+          {addButton()}
+        </div>
+        {cartLink}
+      </div>
+      {/* Indicador de scroll */}
+      <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 hidden md:flex">
+        <span className="font-sans text-[9px] tracking-[0.5em] uppercase" style={{ color: txtColor, opacity: 0.55 }}>Scroll</span>
+        <span className="block w-px h-10" style={{ backgroundColor: txtColor, opacity: 0.2 }} />
+      </div>
+    </div>
+  )
+
   return (
     <>
       {/* ── HERO ──────────────────────────────────────────────
          05 y 06: clip scrubbeado a sangre completa con el panel de compra
-         encima. El resto: el recorte sobre el color de su mundo. Esa es la
+         encima. 01–04: lo mismo, pero el «clip» es motion graphics en vivo
+         sobre el recorte (MotionBagScene). Sin ninguno de los dos, el recorte
+         sobre el color de su mundo. Esa es la
          única aparición del bolso entero en la portada: la vieja escena que lo
          repetía justo debajo durante tres pantallas se retiró (un solo
          clímax por página; el «de cerca» lo hacen los detalles reales). */}
@@ -130,50 +187,26 @@ export default function ProductPage() {
           textColor={scrub.beatColor}
           focusX={scrub.focusX}
         >
-          {/* Panel de info/compra — ocupa el primer viewport y SCROLLEA sobre el
-             clip fijo; el velo viaja con el texto para mantener la legibilidad. */}
-          <div
-            data-tone="light"
-            className="relative min-h-[100svh] flex flex-col justify-end md:justify-center md:items-end px-7 md:px-16 pb-12 md:pb-0"
-          >
-            {/* Velo con el bg del tema — móvil desde abajo, desktop desde la derecha.
-               En móvil el bolso queda centrado detrás del texto (ver focusX), así
-               que el velo tapa hasta la altura del sello; viaja con el panel y el
-               bolso se descubre entero al bajar. */}
-            <div
-              className="pointer-events-none absolute inset-0 md:hidden"
-              style={{ background: `linear-gradient(to top, ${bgColor}F7, ${bgColor}E0 38%, ${bgColor}8C 56%, transparent 74%)` }}
-            />
-            <div
-              className="pointer-events-none absolute inset-0 hidden md:block"
-              style={{ background: `linear-gradient(to left, ${bgColor}D9, ${bgColor}0D 55%, transparent)` }}
-            />
-            <div className="relative flex flex-col w-full max-w-sm md:items-end md:text-right">
-              <div className="unique-stamp inline-block self-start md:self-end mb-6" style={{ color: txtColor, borderColor: txtColor, opacity: sold ? 0.85 : 0.65 }}>
-                {stampLabel}
-              </div>
-              <h1 className="font-bebas text-7xl md:text-8xl leading-none" style={{ color: txtColor }}>
-                <span className="sr-only">ACRO </span>
-                {number}
-              </h1>
-              <p className="font-sans text-sm leading-relaxed mt-3 max-w-sm" style={{ color: txtColor, opacity: 0.75 }}>{copy.es.tagline}</p>
-              <p lang="en" className="font-sans text-xs leading-relaxed mt-1 max-w-sm italic" style={{ color: txtColor, opacity: 0.6 }}>{copy.en.tagline}</p>
-              <div className="mt-5 md:mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:flex-row-reverse">
-                <span className="font-bebas text-5xl" style={{ color: txtColor }}>{price}€</span>
-                <span className="font-sans text-xs" style={{ color: txtColor, opacity: 0.6 }}>{shippingNote}</span>
-              </div>
-              <div ref={heroCtaRef} className="mt-5 md:mt-6 w-full max-w-xs md:self-end">
-                {addButton()}
-              </div>
-              {cartLink}
-            </div>
-            {/* Indicador de scroll */}
-            <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 hidden md:flex">
-              <span className="font-sans text-[9px] tracking-[0.5em] uppercase" style={{ color: txtColor, opacity: 0.55 }}>Scroll</span>
-              <span className="block w-px h-10" style={{ backgroundColor: txtColor, opacity: 0.2 }} />
-            </div>
-          </div>
+          {heroPanel(false)}
         </ScrubBagScene>
+      ) : stage && product.cutout ? (
+        <MotionBagScene
+          act={stage.act}
+          cutout={product.cutout}
+          size={stage.size}
+          alt={`Bolso ACRO ${number} — ${name}`}
+          number={number}
+          bg={bgColor}
+          accent={theme.accent}
+          dark={isDark}
+          sold={sold}
+          height={`${(1 + showcaseBeats.length) * 100}vh`}
+          beats={showcaseBeats}
+          meta={`${price}€ · Hecho en Donostia`}
+          textColor={stage.beatColor}
+        >
+          {heroPanel(true)}
+        </MotionBagScene>
       ) : (
         <section
           data-tone={isDark ? 'dark' : 'light'}
