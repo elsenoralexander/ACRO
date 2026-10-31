@@ -198,6 +198,9 @@ body {
     scroll-behavior: auto !important;
   }
   .marquee-track,
+  .mg-float,
+  .mg-float-mirror,
+  .mg-breathe,
   .animate-float,
   .animate-intro,
   .animate-slide-up {
@@ -208,6 +211,34 @@ body {
     transform: none !important;
   }
 }
+
+/* ── Portadas en motion graphics (MotionBagScene) ─────────────────────
+   La entrada al cargar vive aquí, en CSS: la pinta el HTML del servidor sin
+   esperar a React. Lo que va con el scroll lo escribe el componente. */
+@keyframes mgEnterLight { from { opacity: 0; } }
+@keyframes mgEnterGhost { from { opacity: 0; transform: translateY(6%); } }
+@keyframes mgEnterBag { from { opacity: 0; transform: translateY(7svh) scale(0.96); } }
+@keyframes mgEnterGround { from { opacity: 0; transform: scaleX(0.55); } }
+@keyframes mgRise { from { opacity: 0; transform: translateY(32px); } }
+@keyframes mgFloat { 50% { transform: translateY(-1.4%); } }
+@keyframes mgFloatMirror { 50% { transform: translateY(1.4%); } }
+@keyframes mgBreathe { 50% { opacity: 0.72; transform: scaleX(0.9); } }
+
+.mg-enter-light { animation: mgEnterLight 1.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.mg-enter-ghost { animation: mgEnterGhost 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.mg-enter-bag { animation: mgEnterBag 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+/* La sombra llega después que el bolso: el peso se posa. */
+.mg-enter-ground { animation: mgEnterGround 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.mg-float { animation: mgFloat 6s ease-in-out infinite; }
+.mg-float-mirror { animation: mgFloatMirror 6s ease-in-out infinite; }
+.mg-breathe { animation: mgBreathe 6s ease-in-out infinite; }
+.mg-cascade > * { animation: mgRise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.mg-cascade > :nth-child(1) { animation-delay: 0.35s; }
+.mg-cascade > :nth-child(2) { animation-delay: 0.42s; }
+.mg-cascade > :nth-child(3) { animation-delay: 0.49s; }
+.mg-cascade > :nth-child(4) { animation-delay: 0.53s; }
+.mg-cascade > :nth-child(5) { animation-delay: 0.6s; }
+.mg-cascade > :nth-child(n + 6) { animation-delay: 0.67s; }
 
 /* ── Showcase (home): el lienzo infinito ─────────────────────────────
    Todo lo que se mueve por fotograma lo escribe Showcase.tsx; aquí solo

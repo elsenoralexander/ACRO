@@ -1,3 +1,5 @@
+export type StageAct = 'hilo' | 'apertura' | 'noche' | 'dorada'
+
 export type Product = {
   id: string
   number: string
@@ -18,6 +20,14 @@ export type Product = {
     /** Posición horizontal del bolso en el frame (0–1) al empezar y al acabar
         el clip: encuadra el móvil vertical. Ver ScrubBagScene. */
     focusX?: [number, number]
+  }
+  /** Portada en motion graphics para los bolsos sin clip: el recorte sobre un
+      plató, con un gesto propio por bolso. Ver MotionBagScene. */
+  stage?: {
+    act: StageAct
+    /** Tamaño del recorte en píxeles: reserva su caja antes de que cargue. */
+    size: [number, number]
+    beatColor: string
   }
   shooting: string[]
   /** Pliego editorial curado (EditorialScene). Va a sangre y de una en una,
@@ -57,6 +67,7 @@ export const products: Product[] = [
       views: ['/images/product-01.png'],
     },
     cutout: '/cutouts/01.png',
+    stage: { act: 'hilo', size: [798, 1370], beatColor: '#4A3A24' },
     shooting: [
       '/images/shoot-01-1.jpg',
       '/images/shoot-01-2.jpg',
@@ -118,6 +129,7 @@ export const products: Product[] = [
       views: ['/images/product-02.png'],
     },
     cutout: '/cutouts/02.png',
+    stage: { act: 'apertura', size: [1045, 1364], beatColor: '#D4D6DA' },
     shooting: [
       '/images/shoot-02-1.jpg',
       '/images/shoot-02-2.jpg',
@@ -188,6 +200,7 @@ export const products: Product[] = [
       views: ['/images/product-03-white.png'],
     },
     cutout: '/cutouts/03.png',
+    stage: { act: 'noche', size: [986, 1600], beatColor: '#C9D2E0' },
     shooting: [
       '/images/shoot-03-1.jpg',
       '/images/shoot-03-2.jpg',
@@ -258,6 +271,7 @@ export const products: Product[] = [
       ],
     },
     cutout: '/cutouts/04.png',
+    stage: { act: 'dorada', size: [913, 1600], beatColor: '#5A3E26' },
     shooting: [
       '/images/shoot-04-1.jpg',
       '/images/shoot-04-2.jpg',

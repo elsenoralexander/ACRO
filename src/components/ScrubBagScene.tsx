@@ -52,7 +52,7 @@ type Props = {
 }
 
 /* One cross-fading beat, slid in from its side, timed by scroll progress. */
-function BeatOverlay({
+export function BeatOverlay({
   progress,
   center,
   span,
